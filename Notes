@@ -1,0 +1,79 @@
+2017/01/15
+I found the "Relation Extraction - Perspective from Convolutional Neural Networks" paper and decided that this would be
+the classifier I would use. This python project is for using the implementations of that paper I found online and
+modify that to serve the purpose of extracting relations from neural science and computer science papers.
+
+The pipeline would be as follows:
+
+1. Preprocess unlabeled data and obtain training data:
+    The first step is to clean up the raw text.
+        I already did this part in the 2016 fall quarter.
+
+    Use the list of key phrases I got to obtain the unlabeled data.
+        If two phrases appears within 15 tokens apart from each other, I take the sentence that they're in and record
+        the sentence as well as the position of the two phrases.
+
+        This part is also largely done already
+
+    Obtain training data
+        Done last quarter, but need some more work because now the requirement is different.
+
+    Padding and turning into embedding
+        There are 3 relationships, isa(x1,x2), isa(x2,x1), and Other.
+        We can specify a fixed sentence length and pad the sentence with <pad>
+        Embedding composes of: 1. word embedding, either from pretrained or random vectors. m_e = 300 2. position
+        embedding vectors with dimensionality of m_d = 50. Each word would have two of those indicating their relative
+        position to the two target words.
+        The embeddings are resized when its l2 exceed 3.
+
+    Dataset:
+        The dataset now has shape: X = num_instances x sentence_length x (m_e + 2 * m_d), Y = num_instances x 3
+
+2. Active learning
+
+
+2017/01/16
+    I finished implementing the preprocessing pipeline. The problem is that the key phrases are a little bit too
+    noisy. I think I got less than 10 positives in 500 sentences that I labeled.
+
+2017/01/18
+    Key phrases are too noisy. I need a named entity recognition thing... or anything that label key words/phrases for
+    me.
+
+2017/01/23
+    I came back to the "such as" phrase again just because the key phrases are way too noisy. But now I'm stuck with
+    having a good definition of an "is-a" relation. Should I mark it as true only if it make sense in the context of
+    its sentence, or if it's true in general?
+    ... Again, I need a large dataset. I can get one by manually marking key phrases around "such as", but that would
+    only bias the model towards marking anything around "such as" as positive. Making dataset is such a pain. I've
+    marked around 70 instances with "such as" and I can do faster without "such as". But what I need was something on
+    the order of thousands. I can mix the "such as" and without "such as" together to create a larger set of sentences,
+    then I mark all of them... Sounds like a plan. It will take a while, but I have no choice.
+
+    Plan: 1. Mark the unlabeled dataset
+    Plan: 2. Rerun the preprocessing util on both "such as" and without and combine them to get a large enough dataset.
+    (Done)
+
+2017/01/24
+    I wrote the program to combine datasets. Now I have a dataset with 900 labeled sentences. It's working to some
+    extent now after enough epochs of training. I'll keep labeling more data.
+    TODO: 1. Mark the unlabeled dataset
+    Plan: 2. Find pretrained embedding and use that to generate embedding for the key phrases. (Done)
+    Plan: 3. Active learning.
+    Plan: 4 Find a easy way to modify the labeled dataset since it may contain mislabeled items.
+
+2017/01/26
+    I added functions to easily draw precision recall curves.
+
+2017/01/28
+    Started to add the active learning module.
+    Active learning module done. Now it's just a matter of the size of the dataset and how to accuractely label data
+    and/or find out what are the ones likely to be marked wrong.
+    That can be achieved by cross validation I think. If I always split the training set into half and do that randomly
+    100 times. Each time I predict the label of one instance in the test set and it is always wrong, then it is likely
+    that the instance is really different from anything else.
+    Of course really doing that might be too costly, so maybe I can think of something else if I have time.
+
+2017/01/29
+    Working on writing a function that takes the two key words, find all their occurrence in labeled dataset, and
+    modify one or all of them. Done.

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<script type="text/javascript" src="Blob.js"></script>
+<script type="text/javascript" src="FileSaver.min.js"></script>
+<script type="text/javascript" src="tools.js"></script>
+<style>
+.highlight
+{
+background-color:yellow;
+}
+</style>
+
+<body onload="onLoad('http://localhost:8000/test_cs_vocab_combined', 'http://localhost:8000/test_cs_unlabeled_data_combined.txt', 'http://localhost:8000/test_cs_labels_combined.txt')">
+
+<h1>Hand label context helper</h1>
+
+
+<p id="text"></p>
+<p id="labels"></p>
+
+<button type="button" onclick="prevSentence()">Previous</button>
+<button type="button" onclick="nextSentence()">Next</button>
+
+<br>
+
+<form action="">
+  <input type="radio" name="label" id="radio_option_0" value="0" onclick="radioSelected(this.value)"> A is-a B<br>
+  <input type="radio" name="label" id="radio_option_1" value="1" onclick="radioSelected(this.value)"> B is-a A<br>
+  <input type="radio" name="label" id="radio_option_2" value="2" onclick="radioSelected(this.value)"> Neither
+</form>
+<br>
+<button type="button" onclick="save()">Save</button>
+</body>
+</html>
