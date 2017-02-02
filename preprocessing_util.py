@@ -91,7 +91,7 @@ def extract_key_phrase_co_occurrences(text_paths, key_phrase_set, max_len=128, m
 def extract_key_phrase_co_occurrences_around_context(text_paths, key_phrase_set, context,
                                                     max_len=128, max_relative_distance = 15,
                                       max_num_extract = 1000000):
-    # type: (List[str], Set[str], int, int) -> List[Tuple[str,List[Tuple[int,int]]]]
+    # type: (List[str], Set[str], List[str], int, int, int) -> List[Tuple[str,List[Tuple[int,int]]]]
     ret = []
     num_extracted = 0
     for text_path in text_paths:
@@ -258,9 +258,10 @@ def indices_to_sentences(indices, rev_vocab, ignore_pad = True):
     return ret
 
 
-def preprocess_from_text_to_unlabeled_data(text_paths, vocab_save_path, unlabeled_data_save_path,
-                                           corpus_directory = read_corpus_util.kCorpusDirectory, to_lower = False):
-    # type: (List[str], str, str, str) -> None
+def preprocess_from_text_to_unlabeled_data(text_paths, vocab_save_path, unlabeled_data_save_path, context = ['such','as'],
+                                           corpus_directory = read_corpus_util.kCorpusDirectory, to_lower = False,
+                                           max_num_extract = 1000000):
+    # type: (List[str], str, str, Union[List[str],None], str, bool, int) -> None
     """
     Read from "text_paths", find all candidate sentences where two key phrases appears close enough to each
     other, create a vocab from the sentences, and record the result with the last two dimension as the indices of the
@@ -277,9 +278,10 @@ def preprocess_from_text_to_unlabeled_data(text_paths, vocab_save_path, unlabele
     if 'such_as' in key_phrases_set:
         raise AssertionError('such as is in the key phrase set.')
 
-    # sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences(text_paths,key_phrases_set)
-    context = ['such','as']
-    sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences_around_context(text_paths,key_phrases_set, context)
+    if context is None:
+        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences(text_paths,key_phrases_set, max_num_extract)
+    else:
+        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences_around_context(text_paths,key_phrases_set, context, max_num_extract)
     print("Finished finding co-occurrences.")
 
     kMaxSentenceLength = 128
@@ -287,6 +289,8 @@ def preprocess_from_text_to_unlabeled_data(text_paths, vocab_save_path, unlabele
     preprocessed_sentences = []
     for sentence, key_phrase_indices in sentence_key_phrase_pairs_list:
         preprocessed_sentences.append(split_and_pad_sentence(sentence,kMaxSentenceLength))
+    print("Finished splitting and padding sentences. Number of sentences: %d" %(len(preprocessed_sentences)))
+
 
     create_vocabulary(vocab_save_path, preprocessed_sentences)
     vocab, rev_vocab = initialize_vocabulary(vocab_save_path)
@@ -379,15 +383,19 @@ if __name__=="__main__":
     #                                        'data/test_cs_vocab_such_as',
     #                                        'data/test_cs_unlabeled_data_such_as.txt', to_lower=True)
 
-    # pretrained embeddings
-    embedding_path = '/media/xor/D/google300/GoogleNews-vectors-negative300.bin'
-    vocab_path = os.path.join(DATA_DIR,'test_cs_vocab_combined')
-    if os.path.exists(embedding_path):
-        word2id, _ = initialize_vocabulary(vocab_path)
-        embedding = util.prepare_pretrained_embedding(embedding_path, word2id)
-        np.save(os.path.join(DATA_DIR,'emb.npy'), embedding)
-    else:
-        print "Pretrained embeddings file %s not found." % embedding_path
+    preprocess_from_text_to_unlabeled_data(['/home/xor/MasterData/cs_corpus_test.txt'],
+                                           'data/test_cs_vocab_random_large',
+                                           'data/test_cs_unlabeled_data_random_large.txt',context=None,to_lower=True, max_num_extract=1000000)
+
+    # # pretrained embeddings
+    # embedding_path = '/media/xor/D/google300/GoogleNews-vectors-negative300.bin'
+    # vocab_path = os.path.join(DATA_DIR,'test_cs_vocab_combined')
+    # if os.path.exists(embedding_path):
+    #     word2id, _ = initialize_vocabulary(vocab_path)
+    #     embedding = util.prepare_pretrained_embedding(embedding_path, word2id)
+    #     np.save(os.path.join(DATA_DIR,'emb.npy'), embedding)
+    # else:
+    #     print "Pretrained embeddings file %s not found." % embedding_path
 
     # combine_preprocessed([('hand_label_context_tool/test_cs_vocab_such_as',
     #                        'hand_label_context_tool/test_cs_unlabeled_data_such_as.txt',

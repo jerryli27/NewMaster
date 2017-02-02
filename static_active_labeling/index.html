@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width" />
+  
+  <title>painter</title>
+
+  <!-- filestart -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  
+  <!-- jQuery UI -->
+      <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+      <!-- bootstrap -->
+      <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+      <script src="bootstrap/js/bootstrap.min.js"></script>
+
+      <!-- main -->
+      <script type="text/javascript" src="active_learning.js"></script>
+  <!-- fileend -->
+</head>
+<body>
+
+  <div id="content">
+
+    <div class="content-box">
+      
+      <div>
+          <h2>Username: </h2><input type="text" name="username" id="username">
+          <p id="key_phrase_pair"></p>
+
+          <p id="sentence"></p>
+
+          <p id="instance_id" hidden></p>
+
+          <form action="">
+              <input type="radio" name="label" id="radio_option_0" value="0" onclick=""> A is-a B<br>
+              <input type="radio" name="label" id="radio_option_1" value="1" onclick=""> B is-a A<br>
+              <input type="radio" name="label" id="radio_option_2" value="2" onclick=""> Neither<br>
+              <input type="radio" name="label" id="radio_option_3" value="3" onclick=""> Not sure/Skip
+          </form>
+
+          <h4>Reason: </h4><input type="text" name="reason" id="reason">
+      </div>
+
+
+      <pre>
+      <button id="submit" class="btn btn-large btn-primary"><i class="icon-edit icon-white"></i> submit</button>
+      </pre>
+
+
+      <!--<div style="width:1250px; margin-left:auto; margin-right:auto;">-->
+      <!--<br/>-->
+      <!--<div style= "margin-left:40px; ">-->
+        <ul> Instructions:
+         <li>1: Input your username and hit submit</li>
+         <li>2: A pair of key words/phrases should appear along with the context they're in.<br>
+             Please mark how the first word is related to the second.<br>
+             Choose Neither if you don't think they are related. </li>
+         <li>3: Hit the submit button to submit your response.  </li>
+         <li>4: Simply close the window when you don't wish to label more. </li>
+         <li>5: If you're not sure, sometimes googling the two phrase helps. Your judgement should be in general
+             sentence independent, so feel free to use outside sources to help you make the choice.</li>
+        </ul>
+
+        <ul> Examples:
+         <li>1: Sentence: “I was talking about machine_learners* and Dave said SVMs* are the best.”.<br>
+             Answer: B is-a A.<br>
+             Reason: SVM is a type of machine learner. Please Ignore plural forms when you make your judgement.</li>
+         <li>2: Sentence: “in section 2 we summarize the statistics required by collectors* such as metronome* to guarantee correct operation .”.<br>
+             Answer: Neither.<br>
+             Reason: metronome is a type of statistics, not a collector. Please analyze the sentence carefully.</li>
+         <li>3: Sentence: “14th european signal_processing* conference* ( eusipco 2006 ) , florence , italy ”.<br>
+             Answer: Neither.<br>
+             Reason: signal_processing conference could be a phrase, but signal_processing is not a conference generally speaking.</li>
+        </ul>
+
+      <!--</div>-->
+ 
+     <script type="text/javascript">
+     </script>
+    </div>
+  </div>
+
+  
+</body>
+</html>

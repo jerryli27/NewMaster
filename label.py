@@ -85,13 +85,14 @@ def main(argv=None):
 
     # # Now hard code to take the first 100
     # data = data[:100]
-    data = data[-1000:]
+    # data = data[-1000:]
 
     x_input, actual_output = label(data, restore_param)
 
     actual_output_exp = np.exp(actual_output)
     actual_output_softmax = actual_output_exp / np.sum(actual_output_exp, axis=1, keepdims=True)
     actual_output_argmax = np.argmax(actual_output_softmax,axis=1)
+    actual_output_softmax_sorted = np.argsort(-np.max(actual_output_softmax[...,:2], axis=1)).tolist()
 
     sentence_indices_input = x_input[:,:-2]
     _,rev_vocab = preprocessing_util.initialize_vocabulary(vocab_path)
@@ -99,14 +100,17 @@ def main(argv=None):
 
     kp_indices_input = x_input[:,-2:]
 
-    print('Diff\tType\tSentence\t\tExpected Score (A is-a B, B is-a A, Neither)\tActual Score')
-    for sentence_i, sentence in enumerate(sentence_input):
+    print('Type\tSentence\t\tProbability [A is-a B, B is-a A, Neither]')
+    # for sentence_i, sentence in enumerate(sentence_input):
+
+    for sentence_i in actual_output_softmax_sorted:
+        sentence = sentence_input[sentence_i]
         # Label the key phrases of interest in the current sentence with *.
         sentence[kp_indices_input[sentence_i,1]] += '*'
         sentence[kp_indices_input[sentence_i,0]] += '*'
         if actual_output_argmax[sentence_i] == 2:
             # current_type = 'Neither'
-            continue
+            break
         if actual_output_argmax[sentence_i] == 0:
             current_type = 'A is-a B'
         elif actual_output_argmax[sentence_i] == 1:

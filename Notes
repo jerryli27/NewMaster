@@ -57,7 +57,7 @@ The pipeline would be as follows:
 2017/01/24
     I wrote the program to combine datasets. Now I have a dataset with 900 labeled sentences. It's working to some
     extent now after enough epochs of training. I'll keep labeling more data.
-    TODO: 1. Mark the unlabeled dataset
+    Plan: 1. Mark the unlabeled dataset
     Plan: 2. Find pretrained embedding and use that to generate embedding for the key phrases. (Done)
     Plan: 3. Active learning.
     Plan: 4 Find a easy way to modify the labeled dataset since it may contain mislabeled items.
@@ -77,3 +77,11 @@ The pipeline would be as follows:
 2017/01/29
     Working on writing a function that takes the two key words, find all their occurrence in labeled dataset, and
     modify one or all of them. Done.
+
+2017/02/01
+    Half of the website is done. The only part left is converting user labels to actual labels that can be used by the
+    cnn, while keeping the record for who labeled what. I also need to support training a new cnn from the newly
+    labeled while the user is labeling new instances at the same time. I need to switch from one model to the other
+    seamlessly, or take as little time as possible.
+    Lastly I need more unlabeled dataset.
+    That should keep me busy for tomorrow.

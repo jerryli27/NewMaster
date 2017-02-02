@@ -20,7 +20,7 @@ tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'hand_label_contex
 tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'),
                            'Directory to save training checkpoint files')
 tf.app.flags.DEFINE_integer('train_size', 100000, 'Number of training examples')
-tf.app.flags.DEFINE_integer('num_epochs', 200, 'Number of epochs to run')
+tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs to run')
 tf.app.flags.DEFINE_boolean('use_pretrain', False, 'Use word2vec pretrained embeddings or not')
 tf.app.flags.DEFINE_boolean('log_device_placement', False, 'Whether log device information in summary')
 

@@ -31,6 +31,8 @@ UNK_ID = 1
 # Regular expressions used to tokenize.
 _DIGIT_RE = re.compile(br"^\d+$")
 
+# DEFAULT_RANDOM_SEED
+DEFAULT_RANDOM_SEED = 1234
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -171,7 +173,7 @@ def save_labels_file(labels_list,labels_save_path):
             labels_str = map(str,labels)
             target_file.write(' '.join(labels_str) + '\n')
 
-def read_data(source_path, target_path, sent_len, attention_path=None, train_size=10000, shuffle=True):
+def read_data(source_path, target_path, sent_len, attention_path=None, train_size=10000, shuffle=True, random_seed=DEFAULT_RANDOM_SEED):
     """Read source(x), target(y) and attention if given.
 
     Original taken from
@@ -215,7 +217,7 @@ def read_data(source_path, target_path, sent_len, attention_path=None, train_siz
             _a = [np.float32(att.strip()) for att in att_file.readlines()]
             assert len(_a) == len(_y)
 
-    return shuffle_split(_X, _y, a=_a, train_size=train_size, shuffle=shuffle)
+    return shuffle_split(_X, _y, a=_a, train_size=train_size, shuffle=shuffle, random_seed=random_seed)
 
 
 def read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=True, shuffle_seed = None):
@@ -308,7 +310,7 @@ def read_data_labeled_part(source_path, target_path, sent_len, shuffle=True, shu
         _y = _y[shuffle_indices]
     return _X, _y
 
-def shuffle_split_contextwise(X, y, a=None, train_size=10000, shuffle=True):
+def shuffle_split_contextwise(X, y, a=None, train_size=10000, shuffle=True, random_seed = None):
     """Shuffle and split data into train and test subset"""
 
     _left = np.array(X['left'])
@@ -330,7 +332,7 @@ def shuffle_split_contextwise(X, y, a=None, train_size=10000, shuffle=True):
     if train_size > data_size:
         train_size = int(data_size * 0.9)
     if shuffle:
-        np.random.seed(RANDOM_SEED)
+        np.random.seed(random_seed)
         shuffle_indices = np.random.permutation(np.arange(data_size))
         shuffled_data = data[shuffle_indices]
     else:
@@ -582,6 +584,12 @@ def modify_labeled_data(source_path, target_path, kp_pair, sentence_length, voca
         np.savetxt(source_path, data_x, delimiter=' ', fmt='%d')
         save_labels_file(data_y, target_path)
 
+def get_latest_checkpoint_dir(parent_dir):
+    immediate_subdir = [name for name in os.listdir(parent_dir)
+            if os.path.isdir(os.path.join(parent_dir, name))]
+    assert len(immediate_subdir) > 0
+    immediate_subdir = sorted(immediate_subdir)
+    return os.path.join(parent_dir, immediate_subdir[-1])  # Last one is the latest.
 
 
 

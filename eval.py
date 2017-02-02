@@ -35,6 +35,7 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'), 'Directory of the checkpoint files')
 #tf.app.flags.DEFINE_boolean('save_fig', False, 'Whether save the visualized image or not')
 
+CLASS_NAMES = ('A is-a B', 'B is-a A', 'Neither')
 
 def evaluate(eval_data, config):
     """ Build evaluation graph and run. """
@@ -83,7 +84,7 @@ def evaluate(eval_data, config):
             avg_recall = np.mean(np.array(rec))
             auc = util.calc_auc_pr(pre, rec)
             f1 = (2.0 * pre[5] * rec[5]) / (pre[5] + rec[5])
-            print '%s: loss = %.6f, f1 = %.4f, auc = %.4f' % (datetime.now(), loss, f1, auc)
+            print '%s: Overall\nloss = %.6f, f1 = %.4f, auc = %.4f' % (datetime.now(), loss, f1, auc)
 
             pre_per_class, rec_per_class = zip(*eval_per_class)
             num_class = len(pre_per_class)
@@ -92,7 +93,7 @@ def evaluate(eval_data, config):
                 current_rec = rec_per_class[class_i]
                 current_auc = util.calc_auc_pr(current_pre, current_rec)
                 current_f1 = (2.0 * current_pre[5] * current_rec[5]) / (current_pre[5] + current_rec[5])
-                print 'Class Num %d: precision = %.4f, recall = %.4f, f1 = %.4f, auc = %.4f' % (class_i, current_pre[5], current_rec[5], current_f1, current_auc)
+                print 'Class "%s": precision = %.4f, recall = %.4f, f1 = %.4f, auc = %.4f' % (CLASS_NAMES[class_i], current_pre[5], current_rec[5], current_f1, current_auc)
 
 
     x_batch = np.array(x_batch)
@@ -125,7 +126,7 @@ def plot_precision_recall(y_acutal_output, y_expected_output):
     for i, color in zip(range(n_classes), colors):
         plt.plot(recall[i], precision[i], color=color, lw=lw,
                  label='Precision-recall curve of class {0} (area = {1:0.2f})'
-                       ''.format(i, average_precision[i]))
+                       ''.format(CLASS_NAMES[i], average_precision[i]))
 
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
