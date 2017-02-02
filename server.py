@@ -65,6 +65,8 @@ class MyHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                 user_instance_id = form["instance_id"][0]
                 user_label_str = form["label"][0]
                 user_label = np.zeros((4))
+                user_comment = form["comments"][0]
+                user_num_labeled = 0
                 try:
                     user_label_index = int(user_label_str)
                     assert user_label_index <= 3 and user_label_index >= 0
@@ -82,7 +84,7 @@ class MyHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                                         'labeled_save_dir out of date. Please refresh the page and clear any browser ' \
                                         'cache if needed.'
                     else:
-                        database.add_user_instance_and_label(username_str,user_instance_id, user_label, user_sentence)
+                        database.add_user_instance_and_label(username_str,user_instance_id, user_label, user_sentence, user_comment)
                         server_util.save_pickle(config['database_path'],database)
             else:
                 if not ("label" not in form):
@@ -97,13 +99,18 @@ class MyHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                                     'database. Server side error'
                 else:
                     user_instance_ids = user_instance_and_labels[0]
-                    current_key_phrase_pair, sentence, current_instance_id = active_labeling_util.get_new_unlabeled_instance(user_instance_ids)
-
+                    new_tuple = active_labeling_util.get_new_unlabeled_instance(user_instance_ids)
+                    user_num_labeled = database.get_user_num_labeled(username_str)
+                    if new_tuple is not None:
+                        current_key_phrase_pair, sentence, current_instance_id = new_tuple
+                    else:
+                        success = False
+                        error_message = 'You have exhausted the dataset! This is really unusal... You have labeled %d instances.' %(user_num_labeled)
 
         if success:
             content = str( "{ \"message\":\"The command Completed Successfully\" , \"Status\":\"200 OK\" , \"success\":true ,"
-                           " \"used\":%s , \"key_phrase_pair\":\"%s\", \"sentence\":\"%s\" , \"instance_id\":\"%s\" }"
-                           %(str(args.gpu), current_key_phrase_pair, sentence, current_instance_id)).encode("UTF-8")
+                           " \"used\":%s , \"key_phrase_pair\":\"%s\", \"sentence\":\"%s\" , \"instance_id\":\"%s\" , \"user_num_labeled\":%s }"
+                           %(str(args.gpu), current_key_phrase_pair, sentence, current_instance_id, user_num_labeled)).encode("UTF-8")
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.send_header("Content-Length", len(content))

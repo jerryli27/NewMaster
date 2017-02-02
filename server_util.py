@@ -64,6 +64,7 @@ class Database:
         self.usernames = set()
         self.user_instance_ids = {}
         self.user_labels = {}
+        self.user_comments = {}
         self.instance_id_to_sentence = {}
     def add_new_user(self,username):
         """
@@ -76,6 +77,7 @@ class Database:
             self.usernames.add(username)
             self.user_instance_ids[username] = []
             self.user_labels[username] = []
+            self.user_comments[username] = []
             return True
 
     def get_user_num_labeled(self,username):
@@ -86,6 +88,11 @@ class Database:
                                      'the same length. In function get_user_num_labeled for user %s, the '
                                      'user_instance_id length is %d whereas the user_labels length is %d'
                                      % (username,ret,len(self.user_labels[username])))
+            if ret != len(self.user_comments[username]):
+                raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
+                                     'the same length. In function get_user_num_labeled for user %s, the '
+                                     'user_instance_id length is %d whereas the user_comments length is %d'
+                                     % (username,ret,len(self.user_comments[username])))
             return ret
         else:
             return -1  # Indicating there is no such user.
@@ -105,15 +112,21 @@ class Database:
             return None  # Indicating there is no such user.
 
 
-    def add_user_instance_and_label(self,username, instance_id, label, sentence):
+    def add_user_instance_and_label(self,username, instance_id, label, sentence, comment):
         if username in self.usernames:
             self.user_instance_ids[username].append(instance_id)
             self.user_labels[username].append(label)
+            self.user_comments[username].append(comment)
             if len(self.user_instance_ids[username]) != len(self.user_labels[username]):
                 raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
                                      'the same length. In function get_user_instance_and_labels for user %s, the '
                                      'user_instance_id length is %d whereas the user_labels length is %d'
                                      % (username,len(self.user_instance_ids[username]),len(self.user_labels[username])))
+            if len(self.user_instance_ids[username]) != len(self.user_comments[username]):
+                raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
+                                     'the same length. In function get_user_instance_and_labels for user %s, the '
+                                     'user_instance_id length is %d whereas the user_comments length is %d'
+                                     % (username,len(self.user_instance_ids[username]),len(self.user_comments[username])))
             if instance_id not in self.instance_id_to_sentence:
                 self.instance_id_to_sentence[instance_id] = sentence
 

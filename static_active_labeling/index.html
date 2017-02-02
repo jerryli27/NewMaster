@@ -4,18 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width" />
   
-  <title>painter</title>
+  <title>NLP Active Learning Data Collector</title>
 
   <!-- filestart -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  
-  <!-- jQuery UI -->
-      <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-      <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
       <!-- bootstrap -->
-      <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
-      <script src="bootstrap/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
       <!-- main -->
       <script type="text/javascript" src="active_learning.js"></script>
@@ -25,62 +20,83 @@
 
   <div id="content">
 
-    <div class="content-box">
+    <div>
       
       <div>
-          <h2>Username: </h2><input type="text" name="username" id="username">
-          <p id="key_phrase_pair"></p>
-
-          <p id="sentence"></p>
-
-          <p id="instance_id" hidden></p>
-
+          <h2>NLP Active Learning Data Collector</h2>
           <form action="">
-              <input type="radio" name="label" id="radio_option_0" value="0" onclick=""> A is-a B<br>
-              <input type="radio" name="label" id="radio_option_1" value="1" onclick=""> B is-a A<br>
-              <input type="radio" name="label" id="radio_option_2" value="2" onclick=""> Neither<br>
-              <input type="radio" name="label" id="radio_option_3" value="3" onclick=""> Not sure/Skip
+              <div class="form-group">
+                  <label for="username">Username: </label>
+                  <input type="text" name="username" id="username">
+              </div>
+              <div id="user_input_area" hidden>
+                  <p id="key_phrase_pair"></p>
+
+                  <p id="sentence"></p>
+
+                  <p id="instance_id" hidden></p>
+
+                      <div class="radio">
+                          <label><input type="radio" name="label" id="radio_option_0" value="0" onclick=""> A is-a B</label>
+                      </div>
+                      <div class="radio">
+                          <label><input type="radio" name="label" id="radio_option_1" value="1" onclick=""> B is-a A</label>
+                      </div>
+                      <div class="radio">
+                          <label><input type="radio" name="label" id="radio_option_2" value="2" onclick=""> Neither</label>
+                      </div>
+                      <div class="radio">
+                          <label><input type="radio" name="label" id="radio_option_3" value="3" onclick=""> Not sure/Skip</label>
+                      </div>
+                  <div class="form-group">
+                      <label for="comments">Reasons/Comments</label>
+                      <textarea class="form-control" rows="2" name="reason" id="comments" placeholder="(Optional)"></textarea>
+                      <span class="help-block">Give reasons for your choice, especially when the question is hard to answer. Feel free to skip this section and submit more labels instead.</span>
+                  </div>
+              </div>
           </form>
-
-          <h4>Reason: </h4><input type="text" name="reason" id="reason">
       </div>
-
-
-      <pre>
       <button id="submit" class="btn btn-large btn-primary"><i class="icon-edit icon-white"></i> submit</button>
-      </pre>
 
+        <p id="rewards" hidden></p>
 
-      <!--<div style="width:1250px; margin-left:auto; margin-right:auto;">-->
-      <!--<br/>-->
-      <!--<div style= "margin-left:40px; ">-->
-        <ul> Instructions:
-         <li>1: Input your username and hit submit</li>
-         <li>2: A pair of key words/phrases should appear along with the context they're in.<br>
-             Please mark how the first word is related to the second.<br>
-             Choose Neither if you don't think they are related. </li>
-         <li>3: Hit the submit button to submit your response.  </li>
-         <li>4: Simply close the window when you don't wish to label more. </li>
-         <li>5: If you're not sure, sometimes googling the two phrase helps. Your judgement should be in general
-             sentence independent, so feel free to use outside sources to help you make the choice.</li>
-        </ul>
+        <div class="jumbotron">
+          <div class="container">
+            <h2>Introduction:</h2>
+            <p>
+                This website is for a project on extracting semantic information from Computer Science research papers.<br>
+                It uses active learning, which means that the program will ask questions that puzzles it the most.<br>
+                After more data is collected, the program will get better (hopefully) at labeling pairs of key phrases and at asking questions.
+            </p>
 
-        <ul> Examples:
-         <li>1: Sentence: “I was talking about machine_learners* and Dave said SVMs* are the best.”.<br>
-             Answer: B is-a A.<br>
-             Reason: SVM is a type of machine learner. Please Ignore plural forms when you make your judgement.</li>
-         <li>2: Sentence: “in section 2 we summarize the statistics required by collectors* such as metronome* to guarantee correct operation .”.<br>
-             Answer: Neither.<br>
-             Reason: metronome is a type of statistics, not a collector. Please analyze the sentence carefully.</li>
-         <li>3: Sentence: “14th european signal_processing* conference* ( eusipco 2006 ) , florence , italy ”.<br>
-             Answer: Neither.<br>
-             Reason: signal_processing conference could be a phrase, but signal_processing is not a conference generally speaking.</li>
-        </ul>
+            <h2>Instructions:</h2>
+            <ul>
+             <li>1: Input your username and hit submit</li>
+             <li>2: A pair of key words/phrases should appear along with the context they're in.<br>
+                 Please mark how the first word is related to the second one.<br>
+                 Choose "Neither" if you don't think they are related. </li>
+             <li>3: Hit the submit button to submit your response. Simply close the window when you don't wish to label more. </li>
+             <li>4: If you're not sure, sometimes Googling the two phrase helps. Your judgement should be in general
+                 sentence independent, so feel free to use outside sources to help you make the choice. Feel free to leave comments for the choice you've made.</li>
+            </ul>
 
-      <!--</div>-->
- 
-     <script type="text/javascript">
-     </script>
+            <h2>Examples:</h2>
+            <ul>
+             <li>Sentence: “I was talking about machine_learners* and Dave said SVMs* are the best.”.<br>
+                 Answer: B is-a A.<br>
+                 Reason: SVM is a type of machine learner. Please Ignore plural forms when you make your judgement.</li>
+             <li>Sentence: “in section 2 we summarize the statistics required by collectors* such as metronome* to guarantee correct operation .”.<br>
+                 Answer: Neither.<br>
+                 Reason: metronome is a type of statistics, not a collector. Please analyze the sentence carefully.</li>
+             <li>Sentence: “14th european signal_processing* conference* ( eusipco 2006 ) , florence , italy ”.<br>
+                 Answer: Neither.<br>
+                 Reason: signal_processing conference could be a phrase, but signal_processing is not a conference generally speaking.</li>
+            </ul>
+
+            <p>If there's any bugs, please email jiamingli2017@u.northwestern.edu. Thanks!</p>
+
+          </div>
+        </div>
     </div>
   </div>
 

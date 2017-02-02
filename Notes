@@ -85,3 +85,10 @@ The pipeline would be as follows:
     seamlessly, or take as little time as possible.
     Lastly I need more unlabeled dataset.
     That should keep me busy for tomorrow.
+
+2017/02/01
+    The website is up and running. Things left are:
+        When the user enter their user name, do not show the options.
+        Force user to choose one option before sending a request to the server.
+        Record the user's reason.
+        Fix the submit button ui.
