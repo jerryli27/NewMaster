@@ -12,6 +12,7 @@ import re
 from codecs import open as codecs_open
 import cPickle as pickle
 import numpy as np
+import shutil
 
 import preprocessing_util
 
@@ -591,6 +592,18 @@ def get_latest_checkpoint_dir(parent_dir):
     immediate_subdir = sorted(immediate_subdir)
     return os.path.join(parent_dir, immediate_subdir[-1])  # Last one is the latest.
 
+
+def remove_earliest_checkpoint(parent_dir):
+    immediate_subdir = [name for name in os.listdir(parent_dir)
+            if os.path.isdir(os.path.join(parent_dir, name))]
+    assert len(immediate_subdir) > 0
+    immediate_subdir = sorted(immediate_subdir)
+    try:
+        while len(immediate_subdir) >= 5:
+            shutil.rmtree(os.path.join(parent_dir, immediate_subdir[0]))
+            immediate_subdir.pop(0)
+    except:
+        print("Failed to remove earliest checkpoint for some reason... Does not affect the rest of the program.")
 
 
 def main():

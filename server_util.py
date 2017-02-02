@@ -7,10 +7,6 @@ import pickle
 import threading
 import time
 
-from util import get_latest_checkpoint_dir
-from active_learning_online_util import ActiveLabelingUtilOnline
-
-
 
 def load_pickle(path):
     """

@@ -20,6 +20,8 @@ from shutil import move, copy2
 import server_util
 import active_learning_online_util
 
+from util import get_latest_checkpoint_dir, remove_earliest_checkpoint
+
 class MyHandler(CGIHTTPServer.CGIHTTPRequestHandler):
     def __init__(self, req, client_addr, server):
         CGIHTTPServer.CGIHTTPRequestHandler.__init__(self, req, client_addr, server)
@@ -138,6 +140,7 @@ def asynchronous_retrain():
     vocab_path, and create new labeled_save_dir in the new config. Save the config.
     5. Load the new config and create a new active_labeling_util using the new config
     6. Swap out the old and replace with the new one.
+    7. Remove earliest checkpoint if there are too many of them.
 
 
     :return:
@@ -174,7 +177,7 @@ def asynchronous_retrain():
               '--vocab_size=20933 --data_dir="%s"'%(args.python_path,previous_labeled_save_dir))
     # Step 4
     print('Step 4 in asynchronous_retrain')
-    config['cnn_model_path'] = server_util.get_latest_checkpoint_dir('./checkpoints')
+    config['cnn_model_path'] = get_latest_checkpoint_dir('./checkpoints')
     config['source_path'] = os.path.join(previous_labeled_save_dir, 'test_cs_unlabeled_data_combined.txt')
     config['target_path'] = os.path.join(previous_labeled_save_dir, 'test_cs_labels_combined.txt')
     config['vocab_path'] = os.path.join(previous_labeled_save_dir, 'test_cs_vocab_combined')
@@ -190,10 +193,13 @@ def asynchronous_retrain():
     print('Finished database and active learning initialization. Took %.1f seconds' % (end_time - start_time))
     # Step 6
     print('Step 6 in asynchronous_retrain')
-    print('Swapping out the old active_labeling_util.')
     server_frozen = True
     active_labeling_util = new_active_labeling_util
     server_frozen = False
+    # Step 7
+    print('Step 7 in asynchronous_retrain')
+    remove_earliest_checkpoint('./checkpoints')
+
     # call f() again in 3600 seconds
     print('Done.')
     threading.Timer(3600, asynchronous_retrain).start()  # TODO: change back to 3600
