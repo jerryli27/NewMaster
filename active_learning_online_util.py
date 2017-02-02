@@ -26,7 +26,7 @@ class ActiveLabelingUtilOnline:
         :param labeled_save_dir: Directory to which the labeled files will be stored.
         """
         unlabeled_data = util.read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=False)
-        self.unlabeled_data = np.array(unlabeled_data[:10])
+        self.unlabeled_data = np.array(unlabeled_data)
         self.data_size = self.unlabeled_data.shape[0]
 
 
