@@ -218,8 +218,8 @@ else:
               'sent_len':128,
               'labeled_save_dir':('./active_labeling_database/' + str(time.time()))
               }
-    if not os.path.exists(args.config_path):
-        os.makedirs(args.config_path)
+    if not os.path.exists(os.path.dirname(args.config_path)):
+        os.makedirs(os.path.dirname(args.config_path))
     server_util.save_pickle(args.config_path,config)
     os.makedirs(config['labeled_save_dir'])
     copy2(os.path.join('./hand_label_context_tool', 'emb.npy'), os.path.join(config['labeled_save_dir'], 'emb.npy'))
