@@ -53,8 +53,8 @@ def initialize_database(path):
         return load_pickle(path)
     else:
         print("Database file does not exists at %s. Creating a new one." % (path))
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
         database = Database()
         save_pickle(path, database)
         return database
