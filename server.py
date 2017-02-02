@@ -186,7 +186,7 @@ def asynchronous_retrain():
     # Step 5
     print('Step 5 in asynchronous_retrain')
     start_time = time.time()
-    new_active_labeling_util = server_util.ActiveLabelingUtilOnline(
+    new_active_labeling_util = active_learning_online_util.ActiveLabelingUtilOnline(
         config['cnn_model_path'], config['source_path'], config['target_path'],config['vocab_path'],
         config['sent_len'], config['labeled_save_dir'])
     end_time = time.time()

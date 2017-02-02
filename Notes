@@ -92,3 +92,10 @@ The pipeline would be as follows:
         Force user to choose one option before sending a request to the server.
         Record the user's reason.
         Fix the submit button ui.
+
+    All the tasks above are done. I tested it and it worked fine.
+    Here's the response last time I left off. It should be different in an hour.
+
+    solvers grasp
+
+    several sat solvers* such as grasp* [ marques-silva and sakallah 1999 ] and chaff [ moskewicz et al .
