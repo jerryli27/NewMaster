@@ -1,0 +1,4 @@
+model_checkpoint_path: "/home/xor/PycharmProjects/NewMaster/checkpoints/1485596219/model.ckpt-300"
+all_model_checkpoint_paths: "/home/xor/PycharmProjects/NewMaster/checkpoints/1485596219/model.ckpt-100"
+all_model_checkpoint_paths: "/home/xor/PycharmProjects/NewMaster/checkpoints/1485596219/model.ckpt-200"
+all_model_checkpoint_paths: "/home/xor/PycharmProjects/NewMaster/checkpoints/1485596219/model.ckpt-300"
