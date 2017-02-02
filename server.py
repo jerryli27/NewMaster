@@ -197,7 +197,7 @@ parser.add_argument('--gpu', '-g', type=int, default=-1,
 parser.add_argument('--port', '-p', type=int, default=8000,
                     help='using port')
 parser.add_argument('--host', '-ho', default='localhost',
-                    help='using host')
+                    help='using host. If want to be served on web, set it to blank string "".')
 parser.add_argument('--config_path', '-cf', default='./active_labeling_database/config.pkl',
                     help='config_path')
 parser.add_argument('--python_path', '-py', default='python',
@@ -218,6 +218,8 @@ else:
               'sent_len':128,
               'labeled_save_dir':('./active_labeling_database/' + str(time.time()))
               }
+    if not os.path.exists(args.config_path):
+        os.makedirs(args.config_path)
     server_util.save_pickle(args.config_path,config)
     os.makedirs(config['labeled_save_dir'])
     copy2(os.path.join('./hand_label_context_tool', 'emb.npy'), os.path.join(config['labeled_save_dir'], 'emb.npy'))
@@ -238,5 +240,5 @@ print('Finished database and active learning initialization. Took %.1f seconds' 
 
 httpd = BaseHTTPServer.HTTPServer((args.host, args.port), MyHandler)
 print 'serving at', args.host, ':', args.port
-threading.Timer(10, asynchronous_retrain).start()
+threading.Timer(3600, asynchronous_retrain).start()
 httpd.serve_forever()

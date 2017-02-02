@@ -72,14 +72,20 @@ def train(train_data, test_data):
         # checkpoint
         saver = tf.train.Saver(tf.all_variables())
         save_path = os.path.join(out_dir, 'model.ckpt')
-        summary_op = tf.merge_all_summaries()
+        try:
+            summary_op = tf.summary.merge_all()
+        except:
+            summary_op = tf.merge_all_summaries()
 
         # session
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.log_device_placement))
         with sess.as_default():
             train_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "train"), graph=sess.graph)
             dev_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "dev"), graph=sess.graph)
-            sess.run(tf.initialize_all_variables())
+            try:
+                sess.run(tf.global_variables_initializer())
+            except:
+                sess.run(tf.initialize_all_variables())
 
             # assign pretrained embeddings
             if FLAGS.use_pretrain:
