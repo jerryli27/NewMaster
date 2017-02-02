@@ -60,15 +60,15 @@ $(function() {
                                 document.getElementById("sentence").innerHTML = message.sentence;
                                 document.getElementById("instance_id").innerHTML = message.instance_id;
                                 document.getElementById("comments").value = '';
-                                if (message.user_num_labeled == 3) {
+                                if (message.user_num_labeled == 10) {
                                     alert("You've labeled 10 instances! Thank you for contributing to my research. :) As a reward, here are some links below to an NLP course which I found helpful.");
                                     document.getElementById("rewards").hidden = false;
                                     document.getElementById("rewards").innerHTML = 'Interesting NLP Deep learning course syllabus: http://cs224d.stanford.edu/syllabus.html. <br> videos: https://www.youtube.com/playlist?list=PLlJy-eBtNFt4CSVWYqscHDdP58M3zFHIG';
-                                } else if (message.user_num_labeled == 4) {
+                                } else if (message.user_num_labeled == 50) {
                                     alert("You've labeled 50 instances! As a reward, check the page for links to one of my all time favourite deep learning courses.");
                                     document.getElementById("rewards").hidden = false;
                                     document.getElementById("rewards").innerHTML = 'Interesting NLP Deep learning course syllabus: http://cs224d.stanford.edu/syllabus.html. <br> videos: https://www.youtube.com/playlist?list=PLlJy-eBtNFt4CSVWYqscHDdP58M3zFHIG <br> All time favourite CNN course: http://cs231n.stanford.edu/syllabus.html <br> videos: https://www.youtube.com/playlist?list=PLLvH2FwAQhnpj1WEB-jHmPuUeQ8mX-XXG';
-                                } else if (message.user_num_labeled == 5) {
+                                } else if (message.user_num_labeled == 100) {
                                     alert("You've labeled 100 instances! Here's my final reward: A small website I found lately that uses deep learning to color Anime sketches. Thanks for supporting my research.");
                                     document.getElementById("rewards").hidden = false;
                                     document.getElementById("rewards").innerHTML = 'Interesting NLP Deep learning course syllabus: http://cs224d.stanford.edu/syllabus.html. <br> videos: https://www.youtube.com/playlist?list=PLlJy-eBtNFt4CSVWYqscHDdP58M3zFHIG <br> All time favourite CNN course: http://cs231n.stanford.edu/syllabus.html <br> videos: https://www.youtube.com/playlist?list=PLLvH2FwAQhnpj1WEB-jHmPuUeQ8mX-XXG <br> An interesting website that color Anime sketches: http://paintschainer.preferred.tech/ <br> Try it with this sketch for example: http://www.pixiv.net/member_illust.php?mode=medium&illust_id=31274285 <br> English translation of an overview of the project: http://qiita.com/jerryli27/items/f526a7d5b69ae758a3a6';
