@@ -60,6 +60,10 @@ $(function() {
                                 document.getElementById("sentence").innerHTML = message.sentence;
                                 document.getElementById("instance_id").innerHTML = message.instance_id;
                                 document.getElementById("comments").value = '';
+                                var key_phrase_pair_list = message.key_phrase_pair.split(' ');
+                                document.getElementById("radio_option_0_label").innerHTML = '<input type="radio" name="label" id="radio_option_0" value="0" onclick="">'.concat((key_phrase_pair_list[0].concat(' is-a ')).concat(key_phrase_pair_list[1]));
+                                document.getElementById("radio_option_1_label").innerHTML = '<input type="radio" name="label" id="radio_option_1" value="1" onclick="">'.concat((key_phrase_pair_list[1].concat(' is-a ')).concat(key_phrase_pair_list[0]));
+
                                 if (message.user_num_labeled == 10) {
                                     alert("You've labeled 10 instances! Thank you for contributing to my research. :) As a reward, here are some links below to an NLP course which I found helpful.");
                                     document.getElementById("rewards").hidden = false;

@@ -18,7 +18,7 @@
 </head>
 <body>
 
-  <div id="content">
+  <div id="content" style="margin: 25px;">
 
     <div>
       
@@ -37,16 +37,16 @@
                   <p id="instance_id" hidden></p>
 
                       <div class="radio">
-                          <label><input type="radio" name="label" id="radio_option_0" value="0" onclick=""> A is-a B</label>
+                          <label for="radio_option_0" id="radio_option_0_label"><input type="radio" name="label" id="radio_option_0" value="0" onclick=""> A is-a B</label>
                       </div>
                       <div class="radio">
-                          <label><input type="radio" name="label" id="radio_option_1" value="1" onclick=""> B is-a A</label>
+                          <label for="radio_option_1" id="radio_option_1_label"><input type="radio" name="label" id="radio_option_1" value="1" onclick=""> B is-a A</label>
                       </div>
                       <div class="radio">
-                          <label><input type="radio" name="label" id="radio_option_2" value="2" onclick=""> Neither</label>
+                          <label id="radio_option_2_label"><input type="radio" name="label" id="radio_option_2" value="2" onclick=""> Neither</label>
                       </div>
                       <div class="radio">
-                          <label><input type="radio" name="label" id="radio_option_3" value="3" onclick=""> Not sure/Skip</label>
+                          <label id="radio_option_3_label"><input type="radio" name="label" id="radio_option_3" value="3" onclick=""> Not sure/Skip</label>
                       </div>
                   <div class="form-group">
                       <label for="comments">Reasons/Comments</label>
@@ -83,7 +83,7 @@
             <h2>Examples:</h2>
             <ul>
              <li>Sentence: “I was talking about machine_learners* and Dave said SVMs* are the best.”.<br>
-                 Answer: B is-a A.<br>
+                 Answer: SVMs is-a machine_learners.<br>
                  Reason: SVM is a type of machine learner. Please Ignore plural forms when you make your judgement.</li>
              <li>Sentence: “in section 2 we summarize the statistics required by collectors* such as metronome* to guarantee correct operation .”.<br>
                  Answer: Neither.<br>
@@ -91,6 +91,10 @@
              <li>Sentence: “14th european signal_processing* conference* ( eusipco 2006 ) , florence , italy ”.<br>
                  Answer: Neither.<br>
                  Reason: signal_processing conference could be a phrase, but signal_processing is not a conference generally speaking.</li>
+             <li>Sentence: “semi-structured data , notably xml* [ 7 ] , is just emerging as an alternative to both unstructured* and structured data . ”.<br>
+                 Answer: Neither.<br>
+                 Reason: if the key phrases are unstructured_data and xml, the answer would be different, but since "unstructured" is not a noun, the correct choice is "Neither".</li>
+
             </ul>
 
             <p>If there's any bugs, please email jiamingli2017@u.northwestern.edu. Thanks!</p>

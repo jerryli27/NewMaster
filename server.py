@@ -86,6 +86,8 @@ class MyHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                                         'labeled_save_dir out of date. Please refresh the page and clear any browser ' \
                                         'cache if needed.'
                     else:
+
+                        print('Debug: User label is option No.%d' % (user_label_index))
                         database.add_user_instance_and_label(username_str,user_instance_id, user_label, user_sentence, user_comment)
                         server_util.save_pickle(config['database_path'],database)
             else:
@@ -199,6 +201,7 @@ def asynchronous_retrain():
     # Step 7
     print('Step 7 in asynchronous_retrain')
     remove_earliest_checkpoint('./checkpoints')
+    remove_earliest_checkpoint('./active_labeling_database')
 
     # call f() again in 3600 seconds
     print('Done.')

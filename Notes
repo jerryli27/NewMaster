@@ -99,3 +99,6 @@ The pipeline would be as follows:
     solvers grasp
 
     several sat solvers* such as grasp* [ marques-silva and sakallah 1999 ] and chaff [ moskewicz et al .
+
+2017/02/03
+    TODO: I should probably delete the emb file after I'm done using them.
