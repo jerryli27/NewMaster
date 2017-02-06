@@ -204,7 +204,7 @@ def asynchronous_retrain():
     remove_earliest_checkpoint('./active_labeling_database')
 
     # call f() again in 3600 seconds
-    print('Done.')
+    print('Done. The number of labels currently in the database is :%s' %(str(database.get_total_num_labeled())))
     threading.Timer(3600, asynchronous_retrain).start()  # TODO: change back to 3600
 
 parser = argparse.ArgumentParser(description='chainer line drawing colorization server')
@@ -251,6 +251,8 @@ database = server_util.initialize_database(config['database_path'])
 active_labeling_util = active_learning_online_util.ActiveLabelingUtilOnline(
     config['cnn_model_path'], config['source_path'], config['target_path'],
     config['vocab_path'], config['sent_len'], config['labeled_save_dir'])
+
+print('The number of labels currently in the database is :%s' % (str(database.get_total_num_labeled())))
 end_time = time.time()
 print('Finished database and active learning initialization. Took %.1f seconds' % (end_time - start_time))
 

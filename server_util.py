@@ -131,3 +131,19 @@ class Database:
             return False  # Indicating there is no such user.
 
 
+
+    def get_total_num_labeled(self):
+        ret = 0
+        for username in self.usernames:
+            ret += len(self.user_instance_ids[username])
+            if len(self.user_instance_ids[username]) != len(self.user_labels[username]):
+                raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
+                                     'the same length. In function get_user_num_labeled for user %s, the '
+                                     'user_instance_id length is %d whereas the user_labels length is %d'
+                                     % (username,len(self.user_instance_ids[username]),len(self.user_labels[username])))
+            if len(self.user_instance_ids[username]) != len(self.user_comments[username]):
+                raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
+                                     'the same length. In function get_user_num_labeled for user %s, the '
+                                     'user_instance_id length is %d whereas the user_comments length is %d'
+                                     % (username,len(self.user_instance_ids[username]),len(self.user_comments[username])))
+        return ret
