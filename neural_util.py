@@ -56,3 +56,19 @@ def embedding_lookup_in_sentence(sentence_i, position_index_pair, word2vec_looku
     sentence_embeddings = tf.concat(2, (word_vectors, word_to_key_phrase_1_vectors, word_to_key_phrase_2_vectors))
 
     return sentence_embeddings
+
+# def hide_key_phrases(sentence_i, position_index_pair,):
+#     """
+#
+#     :param sentence_i: tensor representing the sentence as the indices of words in the vocab. Shape = (num_batch,
+#     max_sentence_length)
+#     :param position_index_pair: 1-d tensor representing the indices of the pair of entities to be classified. Shape =
+#     (num_batch, 2)
+#     :return: The `sentence_i` with indices at the two positions specified by `position_index_pair` replaced by 0, which
+#     is the UNK word.
+#     """
+#     # position_1_index, position_2_index = tf.unpack(position_index_pair, axis=1)'
+#     tf.scatter_update(sentence_i, position_index_pair, tf.zeros((tf.shape(sentence_i)[0],2)))
+#     # sentence_i[:,position_1_index] = tf.zeros((tf.shape(sentence_i)[0],1))
+#     # sentence_i[:,position_2_index] = tf.zeros((tf.shape(sentence_i)[0],1))
+#     return sentence_i

@@ -77,6 +77,17 @@ class Model(object):
         if is_train:
             self.optimizer = config['optimizer']
             self.dropout = config['dropout']
+        if config.get("gpu_percentage",0) > 0:
+            self.gpu_percentage = config["gpu_percentage"]
+            self.use_cpu = False
+        else:
+            self.gpu_percentage = 0
+            self.use_cpu = True
+        if config['hide_key_phrases']:
+            self.hide_key_phrases = True
+        else:
+            self.hide_key_phrases = False
+
         self.build_graph()
 
     def build_graph(self):

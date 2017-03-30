@@ -174,7 +174,7 @@ def save_labels_file(labels_list,labels_save_path):
             labels_str = map(str,labels)
             target_file.write(' '.join(labels_str) + '\n')
 
-def read_data(source_path, target_path, sent_len, attention_path=None, train_size=10000, shuffle=True, random_seed=DEFAULT_RANDOM_SEED):
+def read_data(source_path, target_path, sent_len, attention_path=None, train_size=10000, shuffle=True, random_seed=DEFAULT_RANDOM_SEED, hide_key_phrases=False):
     """Read source(x), target(y) and attention if given.
 
     Original taken from
@@ -198,6 +198,12 @@ def read_data(source_path, target_path, sent_len, attention_path=None, train_siz
                 # The data should already be padded so it doesn;t need to do padding here.
                 # if sent_len > len(source_ids):
                 #     source_ids += [PAD_ID] * (sent_len - len(source_ids))
+
+                # Assign the ids of the key phrase pair to 0
+                if hide_key_phrases:
+                    source_ids[source_ids[len(source_ids) - 1]] = 0
+                    source_ids[source_ids[len(source_ids) - 2]] = 0
+
                 if len(source_ids) != sent_len + 2:  # 2 represent the 2 indices for the key phrases.
                     raise AssertionError("At line %d the length of input source %d is not the same as the length of "
                                          "sentence plus 2, which is %d." %(len(_X),len(source_ids),sent_len+2))

@@ -31,13 +31,18 @@ tf.app.flags.DEFINE_float('lr_decay', 0.95, 'LR decay rate')
 tf.app.flags.DEFINE_integer('tolerance_step', 500,
                             'Decay the lr after loss remains unchanged for this number of steps')
 tf.app.flags.DEFINE_float('dropout', 0.5, 'Dropout rate. 0 is no dropout.')
-
+tf.app.flags.DEFINE_boolean('hide_key_phrases', False, 'Whether to hide the key phrase pair in the input sentence by '
+                                                       'replacing them with UNK.')
 
 # logging
 tf.app.flags.DEFINE_integer('log_step', 10, 'Display log to stdout after this step')
 tf.app.flags.DEFINE_integer('summary_step', 50,
                             'Write summary (evaluate model on dev set) after this step')
 tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
+
+# Device option
+tf.app.flags.DEFINE_float('gpu_percentage', -1, "The percentage of gpu this program can use. "
+                                                 "Set to <= 0 for cpu mode.")
 
 
 def train(train_data, test_data):
@@ -78,7 +83,15 @@ def train(train_data, test_data):
             summary_op = tf.merge_all_summaries()
 
         # session
-        sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.log_device_placement))
+        config = tf.ConfigProto(log_device_placement=FLAGS.log_device_placement)
+        if FLAGS.gpu_percentage > 0:
+            config.gpu_options.per_process_gpu_memory_fraction = FLAGS.gpu_percentage
+        else:
+            config = tf.ConfigProto(
+                log_device_placement=FLAGS.log_device_placement,
+                device_count={'GPU': 0}
+            )
+        sess = tf.Session(config=config)
         with sess.as_default():
             train_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "train"), graph=sess.graph)
             dev_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "dev"), graph=sess.graph)
@@ -239,7 +252,8 @@ def main(argv=None):
         else:
             raise ValueError("Attention file %s not found.", os.path.join(FLAGS.data_dir, 'source.att'))
     train_data, test_data = util.read_data(source_path, target_path, FLAGS.sent_len,
-                                           attention_path=attention_path, train_size=FLAGS.train_size)
+                                           attention_path=attention_path, train_size=FLAGS.train_size,
+                                           hide_key_phrases=FLAGS.hide_key_phrases)
     train(train_data, test_data)
 
 

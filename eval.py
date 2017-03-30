@@ -16,7 +16,6 @@ from datetime import datetime
 import os
 import tensorflow as tf
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from itertools import cycle
 from sklearn.metrics import precision_recall_curve
@@ -146,7 +145,7 @@ def main(argv=None):
     target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
     vocab_path = os.path.join(restore_param['data_dir'], 'test_cs_vocab_combined')
     _, data = util.read_data(source_path, target_path, restore_param['sent_len'],
-                             train_size=restore_param['train_size'])
+                             train_size=restore_param['train_size'], hide_key_phrases=restore_param['hide_key_phrases'])
 
     pre, rec, x_input, expected_output, actual_output = evaluate(data, restore_param)
 
