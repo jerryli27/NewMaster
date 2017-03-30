@@ -102,3 +102,26 @@ The pipeline would be as follows:
 
 2017/02/03
     TODO: I should probably delete the emb file after I'm done using them.
+
+2017/03/11
+wrong labels:
+2.000	A is-a B	<bos> observed symptoms* and ( ) of each probe are initialized at the beginning of the active probing* . <eos>		[ 1.  0.  0.]	[  5.84049303e-07   1.64866105e-05   9.99982953e-01]
+2.000	A is-a B	<bos> for the external i/o we multiplexed the i/o buses* to reduce the number of pins* . <eos>		[ 1.  0.  0.]	[  6.50761285e-05   1.21757612e-05   9.99922812e-01]
+1.997	A is-a B	<bos> figure 2 shows the prior and the posterior* distributions of the coefficients* , using mcmc with 10000 iterations . <eos>		[ 1.  0.  0.]	[ 0.00169531  0.00902555  0.98927915]
+
+1.998	A is-a B	<bos> the network_database actually holds a representation of the social network ; it may be in-memory or on persistent* storage* . <eos>		[ 1.  0.  0.]	[  7.67719117e-04   9.74751770e-01   2.44805720e-02]
+I'm pretty sure there's something wrong in the database. I think...
+
+2017/03/12
+The reason why people labeled things as it is varies a lot. Some think that an "is-a" relation can be used on
+adjectives as well. Some think if the relation does not make sense in the sentence then it should not count.
+Some think the other way around. It will require lots of cleaning up but it is definitely useful to see how others view
+this very subjective problem.
+
+2017/03/27
+I want to summarize what I have done in the past quarters.
+
+2017/03/30
+I will separate the problem into two tasks. One is replace keywords with dollar signs and let the classifier just
+classify based on the sentence, not the key phrases. This will force the classifier to learn from sentences, not just
+use the word embeddings. This will avoid having the problem of labeling every instance with “Intel” in it as True.

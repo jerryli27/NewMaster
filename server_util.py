@@ -107,6 +107,26 @@ class Database:
         else:
             return None  # Indicating there is no such user.
 
+    def get_user_data(self,username):
+        if username in self.usernames:
+            instances = self.user_instance_ids[username]
+            sentences = [self.instance_id_to_sentence[instance] for instance in instances]
+            labels = self.user_labels[username]
+            comments = self.user_comments[username]
+            if len(instances) != len(labels):
+                raise AssertionError('For some reason, the instance ids list and the user labels list does not have '
+                                     'the same length. In function get_user_instance_and_labels for user %s, the '
+                                     'user_instance_id length is %d whereas the user_labels length is %d'
+                                     % (username,len(instances),len(labels)))
+            if len(instances) != len(comments):
+                raise AssertionError('For some reason, the instance ids list and the user comments list does not have '
+                                     'the same length. In function get_user_instance_and_labels for user %s, the '
+                                     'user_instance_id length is %d whereas the user_comments length is %d'
+                                     % (username,len(instances),len(comments)))
+
+            return sentences, labels, comments
+        else:
+            return None  # Indicating there is no such user.
 
     def add_user_instance_and_label(self,username, instance_id, label, sentence, comment):
         if username in self.usernames:
