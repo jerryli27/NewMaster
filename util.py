@@ -7,17 +7,18 @@
 #
 ###########################################################
 
+import cPickle as pickle
 import os
 import re
-from codecs import open as codecs_open
-import cPickle as pickle
-import numpy as np
 import shutil
+from codecs import open as codecs_open
+
+import numpy as np
 
 import preprocessing_util
 
-
 # Special vocabulary symbols.
+
 PAD_TOKEN = '<pad>' # pad symbol
 UNK_TOKEN = '<unk>' # unknown word
 BOS_TOKEN = '<bos>' # begin-of-sentence symbol

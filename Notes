@@ -125,3 +125,36 @@ I want to summarize what I have done in the past quarters.
 I will separate the problem into two tasks. One is replace keywords with dollar signs and let the classifier just
 classify based on the sentence, not the key phrases. This will force the classifier to learn from sentences, not just
 use the word embeddings. This will avoid having the problem of labeling every instance with “Intel” in it as True.
+
+2017/04/02
+TODO: Pick some phrase in the extracted context ratio data, and examine all instances containing that phrase to see
+if the context ratio is actually helpful. (Because the ratio is pretty low, lower than I thought.)
+TODO: Clean up the database. Double check each one labeled.
+TODO: For each label, go through the dataset and label all instances with the same key phrase pair as positive/negative.
+If there is a conflict, debug it.
+
+2017/04/03
+After the meeting:
+So the pipeline would be like:
+Start with what I labeled, get all sentences with the labeled key phrases, and train the sentence level classifier.
+Pick the most confident ones labeled by the sentence classifier and feed the corresponding key phrases to the key
+phrase classifier.
+Train the key phrase classifier and label more key phrase pairs. Pick the most confident one in those and get the
+sentences they occurred in.
+Feed the additional sentences back into the sentence level classifier and get some more key phrases. And the cycle
+completes.
+
+I was not sure whether I should go through the key phrase classifier. Because Doug seems to think the key phrase
+classifier will just learn to memorize but not label anything new. So he suggested directly taking the most confident
+ones and treat them as extra training data, without going through the key phrase classifier.
+
+I can read the paper again and try both.
+
+Updating the to-do list after the meeting:
+TODO: get all sentences with the labeled key phrases
+TODO: Pick the most confident ones labeled by the sentence classifier and feed the corresponding key phrases to the key
+phrase classifier. (Can do so manually for now)
+    I have to modify the current code so that it outputs the labeled ones with the highest confidence not in txt format
+    but in the format of dataset.
+
+TODO: Build a key phrase classifier.

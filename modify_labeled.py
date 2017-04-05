@@ -18,4 +18,4 @@ if __name__=='__main__':
     source_path = os.path.join(restore_param['data_dir'], 'test_cs_unlabeled_data_combined.txt')
     target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
     vocab_path = os.path.join(restore_param['data_dir'], 'test_cs_vocab_combined')
-    util.modify_labeled_data(source_path,target_path,['solids','glasses'],restore_param['sent_len'],vocab_path)
+    util.modify_labeled_data(source_path,target_path,['solvers','cplex'],restore_param['sent_len'],vocab_path)
