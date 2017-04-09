@@ -37,7 +37,14 @@ def label(eval_data, config):
                 m = cnn.Model(config, is_train=False)
         saver = tf.train.Saver(tf.all_variables())
 
-        with tf.Session() as sess:
+        tf_config = tf.ConfigProto()
+        if config.get("gpu_percentage", 0) > 0:
+            tf_config.gpu_options.per_process_gpu_memory_fraction = config.get("gpu_percentage", 0)
+        else:
+            tf_config = tf.ConfigProto(
+                device_count={'GPU': 0}
+            )
+        with tf.Session(config=tf_config) as sess:
             ckpt = tf.train.get_checkpoint_state(config['train_dir'])
             if ckpt and ckpt.model_checkpoint_path:
                 saver.restore(sess, ckpt.model_checkpoint_path)

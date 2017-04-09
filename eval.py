@@ -136,7 +136,6 @@ def plot_precision_recall(y_acutal_output, y_expected_output):
     plt.show()
 
 
-
 def main(argv=None):
     restore_param = util.load_from_dump(os.path.join(FLAGS.train_dir, 'flags.cPickle'))
     restore_param['train_dir'] = FLAGS.train_dir

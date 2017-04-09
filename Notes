@@ -158,3 +158,12 @@ phrase classifier. (Can do so manually for now)
     but in the format of dataset.
 
 TODO: Build a key phrase classifier.
+
+2017/04/04
+    I finished the pipeline to alternate between training and labeling unlabeled data. The problem is there is way too
+    many instances of "neither" relation than "a-isa-b" or "b-isa-a". I can of course use two different thresholds for
+    them. But even if I set the threshold to 0.9999 there is still 1/2 of unlabeled data being labeled as "neither",
+    and some of them are wrongly labeled.
+    Yeah the pipeline works but the quality is low. It is labeling too many instances because the model is over
+    confident (couldn't blame it really because it is trained to output either 0 or 1.
+    I should implement the key phrase classifier. I should also re-read the paper.

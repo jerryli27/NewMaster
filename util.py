@@ -310,7 +310,8 @@ def read_data_labeled_part(source_path, target_path, sent_len, shuffle=True, shu
     assert len(_X) == len(_y)
     print "\t%d examples found." % data_size
 
-
+    _X= np.array(_X)
+    _y= np.array(_y)
     if shuffle:
         np.random.seed(seed=shuffle_seed)
         shuffle_indices = np.random.permutation(np.arange(data_size))

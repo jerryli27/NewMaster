@@ -80,8 +80,8 @@ class Model(object):
         if config.get("gpu_percentage",0) > 0:
             self.gpu_percentage = config["gpu_percentage"]
             self.use_cpu = False
+            # TODO: still need to change where the variable is located.
         else:
-            # TODO: need to change where the variable is located. All variables are now located on cpu.
             self.gpu_percentage = 0
             self.use_cpu = True
         if config['hide_key_phrases']:
@@ -93,73 +93,74 @@ class Model(object):
 
     def build_graph(self):
         """ Build the computation graph. """
-        self._inputs = tf.placeholder(dtype=tf.int64, shape=[None, self.sent_len + 2], name='input_x')
-        self._sentences = self._inputs[:,:-2]
-        # Number of key phrases is always 2
-        self._key_phrase_indices = self._inputs[:,-2:]
+        self._inputs = tf.placeholder(dtype=tf.float32, shape=[None, self.word_emb_size * 2], name='input_x')
+        # self._sentences = self._inputs[:,:-2]
+        # # Number of key phrases is always 2
+        # self._key_phrase_indices = self._inputs[:,-2:]
         self._labels = tf.placeholder(dtype=tf.float32, shape=[None, self.num_classes], name='input_y')
         self._attention = tf.placeholder(dtype=tf.float32, shape=[None, 1], name='attention')
         losses = []
 
-        # lookup layer
-        with tf.variable_scope('embedding') as scope:
-            self._W_emb = _variable_on_cpu(name='embedding', shape=[self.vocab_size, self.word_emb_size],
-                                           initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0))
-            self._relative_distance_emb = _variable_on_cpu(name='relative_distance_embedding',
-                                                           shape=[self.sent_len * 2 - 1, self.pos_emb_size],
-                                                           initializer=tf.random_uniform_initializer(minval=-1.0,
-                                                                                                     maxval=1.0))
+        # # lookup layer
+        # with tf.variable_scope('embedding') as scope:
+        #     self._W_emb = _variable_on_cpu(name='embedding', shape=[self.vocab_size, self.word_emb_size],
+        #                                    initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0))
+        #     self._relative_distance_emb = _variable_on_cpu(name='relative_distance_embedding',
+        #                                                    shape=[self.sent_len * 2 - 1, self.pos_emb_size],
+        #                                                    initializer=tf.random_uniform_initializer(minval=-1.0,
+        #                                                                                              maxval=1.0))
+        #
+        #     # # sent_batch is of shape: (batch_size, sent_len, word_emb_size + 2 * pos_emb_size, 1), in order to use conv2d
+        #     sent_batch = neural_util.embedding_lookup_in_sentence(self._sentences,self._key_phrase_indices,self._W_emb,
+        #                                                         self._relative_distance_emb)
+        #     # sent_batch = tf.expand_dims(sent_batch, -1)
+        #     # sent_batch = tf.nn.embedding_lookup(params=self._W_emb, ids=self._inputs)
+        #     # sent_batch = tf.expand_dims(sent_batch, -1)
 
-            # # sent_batch is of shape: (batch_size, sent_len, word_emb_size + 2 * pos_emb_size, 1), in order to use conv2d
-            sent_batch = neural_util.embedding_lookup_in_sentence(self._sentences,self._key_phrase_indices,self._W_emb,
-                                                                self._relative_distance_emb)
-            sent_batch = tf.expand_dims(sent_batch, -1)
-            # sent_batch = tf.nn.embedding_lookup(params=self._W_emb, ids=self._inputs)
-            # sent_batch = tf.expand_dims(sent_batch, -1)
+        # # conv + pooling layer
+        # pool_tensors = []
+        # for k_size in range(self.min_window, self.max_window+1):
+        #     with tf.variable_scope('conv-%d' % k_size) as scope:
+        #         kernel, wd = _variable_with_weight_decay(
+        #             name='kernel-%d' % k_size,
+        #             shape=[k_size, self.word_emb_size + 2 * self.pos_emb_size, 1, self.num_kernel],
+        #             initializer=tf.truncated_normal_initializer(stddev=0.01),
+        #             wd=self.l2_reg)
+        #         losses.append(wd)
+        #         conv = tf.nn.conv2d(input=sent_batch, filter=kernel, strides=[1,1,1,1], padding='VALID')
+        #         biases = _variable_on_cpu(name='bias-%d' % k_size,
+        #                                   shape=[self.num_kernel],
+        #                                   initializer=tf.constant_initializer(0.0))
+        #         bias = tf.nn.bias_add(conv, biases)
+        #         activation = tf.nn.relu(bias, name=scope.name)
+        #         # shape of activation: [batch_size, conv_len, 1, num_kernel]
+        #         conv_len = activation.get_shape()[1]
+        #         pool = tf.nn.max_pool(activation, ksize=[1,conv_len,1,1], strides=[1,1,1,1], padding='VALID')
+        #         # shape of pool: [batch_size, 1, 1, num_kernel]
+        #         pool_tensors.append(pool)
+        #
+        # # Combine all pooled tensors
+        # num_filters = self.max_window - self.min_window + 1
+        # pool_size = num_filters * self.num_kernel
+        # pool_layer = tf.concat(num_filters, pool_tensors, name='pool')
+        # pool_flat = tf.reshape(pool_layer, [-1, pool_size])
+        #
+        # # drop out layer
+        # if self.is_train and self.dropout > 0:
+        #     pool_dropout = tf.nn.dropout(pool_flat, 1 - self.dropout)
+        # else:
+        #     pool_dropout = pool_flat
 
-        # conv + pooling layer
-        pool_tensors = []
-        for k_size in range(self.min_window, self.max_window+1):
-            with tf.variable_scope('conv-%d' % k_size) as scope:
-                kernel, wd = _variable_with_weight_decay(
-                    name='kernel-%d' % k_size,
-                    shape=[k_size, self.word_emb_size + 2 * self.pos_emb_size, 1, self.num_kernel],
-                    initializer=tf.truncated_normal_initializer(stddev=0.01),
-                    wd=self.l2_reg)
-                losses.append(wd)
-                conv = tf.nn.conv2d(input=sent_batch, filter=kernel, strides=[1,1,1,1], padding='VALID')
-                biases = _variable_on_cpu(name='bias-%d' % k_size,
-                                          shape=[self.num_kernel],
-                                          initializer=tf.constant_initializer(0.0))
-                bias = tf.nn.bias_add(conv, biases)
-                activation = tf.nn.relu(bias, name=scope.name)
-                # shape of activation: [batch_size, conv_len, 1, num_kernel]
-                conv_len = activation.get_shape()[1]
-                pool = tf.nn.max_pool(activation, ksize=[1,conv_len,1,1], strides=[1,1,1,1], padding='VALID')
-                # shape of pool: [batch_size, 1, 1, num_kernel]
-                pool_tensors.append(pool)
-
-        # Combine all pooled tensors
-        num_filters = self.max_window - self.min_window + 1
-        pool_size = num_filters * self.num_kernel
-        pool_layer = tf.concat(num_filters, pool_tensors, name='pool')
-        pool_flat = tf.reshape(pool_layer, [-1, pool_size])
-
-        # drop out layer
-        if self.is_train and self.dropout > 0:
-            pool_dropout = tf.nn.dropout(pool_flat, 1 - self.dropout)
-        else:
-            pool_dropout = pool_flat
 
         # fully-connected layer
         with tf.variable_scope('output') as scope:
-            W, wd = _variable_with_weight_decay('W', shape=[pool_size, self.num_classes],
+            W, wd = _variable_with_weight_decay('W', shape=[2 * self.word_emb_size, self.num_classes],
                                                 initializer=tf.truncated_normal_initializer(stddev=0.05),
                                                 wd=self.l2_reg)
             losses.append(wd)
             biases = _variable_on_cpu('bias', shape=[self.num_classes],
                                       initializer=tf.constant_initializer(0.01))
-            self.logits = tf.nn.bias_add(tf.matmul(pool_dropout, W), biases, name='logits')
+            self.logits = tf.nn.bias_add(tf.matmul(self._inputs, W), biases, name='logits')
 
         # loss
         with tf.variable_scope('loss') as scope:
@@ -270,13 +271,13 @@ class Model(object):
     @property
     def scores(self):
         return self.logits
-
-    @property
-    def W_emb(self):
-        return self._W_emb
+    #
+    # @property
+    # def W_emb(self):
+    #     return self._W_emb
 
     def assign_lr(self, session, lr_value):
         session.run(tf.assign(self.lr, lr_value))
 
-    def assign_embedding(self, session, pretrained):
-        session.run(tf.assign(self.W_emb, pretrained))
+    # def assign_embedding(self, session, pretrained):
+    #     session.run(tf.assign(self.W_emb, pretrained))
