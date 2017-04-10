@@ -14,40 +14,42 @@ import util
 import multilayer
 
 
-FLAGS = tf.app.flags.FLAGS
+def define_flags():
+    # train parameters
+    this_dir = os.path.abspath(os.path.dirname(__file__))
+    tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'hand_label_context_tool'), 'Directory of the data')
+    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'),
+                               'Directory to save training checkpoint files')
+    tf.app.flags.DEFINE_integer('train_size', 100000, 'Number of training examples')
+    tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs to run')
+    tf.app.flags.DEFINE_boolean('use_pretrain', False, 'Use word2vec pretrained embeddings or not')
+    tf.app.flags.DEFINE_boolean('log_device_placement', False, 'Whether log device information in summary')
 
-# train parameters
-this_dir = os.path.abspath(os.path.dirname(__file__))
-tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'hand_label_context_tool'), 'Directory of the data')
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'),
-                           'Directory to save training checkpoint files')
-tf.app.flags.DEFINE_integer('train_size', 100000, 'Number of training examples')
-tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs to run')
-tf.app.flags.DEFINE_boolean('use_pretrain', False, 'Use word2vec pretrained embeddings or not')
-tf.app.flags.DEFINE_boolean('log_device_placement', False, 'Whether log device information in summary')
+    tf.app.flags.DEFINE_string('optimizer', 'adam',
+                               'Optimizer to use. Must be one of "sgd", "adagrad", "adadelta" and "adam"')
+    tf.app.flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate')
+    tf.app.flags.DEFINE_float('lr_decay', 0.95, 'LR decay rate')
+    tf.app.flags.DEFINE_integer('tolerance_step', 500,
+                                'Decay the lr after loss remains unchanged for this number of steps')
+    tf.app.flags.DEFINE_float('dropout', 0.5, 'Dropout rate. 0 is no dropout.')
+    tf.app.flags.DEFINE_boolean('hide_key_phrases', False, 'Whether to hide the key phrase pair in the input sentence by '
+                                                           'replacing them with UNK.')
 
-tf.app.flags.DEFINE_string('optimizer', 'adam',
-                           'Optimizer to use. Must be one of "sgd", "adagrad", "adadelta" and "adam"')
-tf.app.flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate')
-tf.app.flags.DEFINE_float('lr_decay', 0.95, 'LR decay rate')
-tf.app.flags.DEFINE_integer('tolerance_step', 500,
-                            'Decay the lr after loss remains unchanged for this number of steps')
-tf.app.flags.DEFINE_float('dropout', 0.5, 'Dropout rate. 0 is no dropout.')
-tf.app.flags.DEFINE_boolean('hide_key_phrases', False, 'Whether to hide the key phrase pair in the input sentence by '
-                                                       'replacing them with UNK.')
+    # logging
+    tf.app.flags.DEFINE_integer('log_step', 10, 'Display log to stdout after this step')
+    tf.app.flags.DEFINE_integer('summary_step', 50,
+                                'Write summary (evaluate model on dev set) after this step')
+    tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
 
-# logging
-tf.app.flags.DEFINE_integer('log_step', 10, 'Display log to stdout after this step')
-tf.app.flags.DEFINE_integer('summary_step', 50,
-                            'Write summary (evaluate model on dev set) after this step')
-tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
-
-# Device option
-tf.app.flags.DEFINE_float('gpu_percentage', -1, "The percentage of gpu this program can use. "
-                                                 "Set to <= 0 for cpu mode.")
+    # Device option
+    tf.app.flags.DEFINE_float('gpu_percentage', -1, "The percentage of gpu this program can use. "
+                                                     "Set to <= 0 for cpu mode.")
 
 def get_key_phrases(data):
-    x, y, _ = zip(*data)
+    try:
+        x, y, _ = zip(*data)
+    except:
+        x = data
     # x,y = data
     key_phrases = []
     for source_ids in x:
@@ -71,7 +73,7 @@ def _auc_pr(true, prob, threshold):
 
 
 
-def train(train_data, test_data):
+def train(train_data, test_data, FLAGS = tf.app.flags.FLAGS):
     # # train_dir
     # timestamp = str(int(time.time()))
     # out_dir = os.path.abspath(os.path.join(FLAGS.train_dir, timestamp))
@@ -95,13 +97,13 @@ def train(train_data, test_data):
     test_x = get_key_phrases(test_data)
     _, test_y, _ = zip(*test_data)
 
-    # assign pretrained embeddings
-    if FLAGS.use_pretrain:
-        print "Initialize model with pretrained embeddings..."
-        print("Please don't forget to change the vocab size to the corresponding on in the embedding.")
-        pretrained_embedding = np.load(os.path.join(FLAGS.data_dir, 'emb.npy'))
-        train_x = key_phrase_indices_to_embedding(train_x, pretrained_embedding)
-        test_x = key_phrase_indices_to_embedding(test_x, pretrained_embedding)
+    # # assign pretrained embeddings
+    # if FLAGS.use_pretrain:
+    print "Initialize model with pretrained embeddings..."
+    print("Please don't forget to change the vocab size to the corresponding on in the embedding.")
+    pretrained_embedding = np.load(os.path.join(FLAGS.data_dir, 'emb.npy'))
+    train_x = key_phrase_indices_to_embedding(train_x, pretrained_embedding)
+    test_x = key_phrase_indices_to_embedding(test_x, pretrained_embedding)
 
     # Use SVM. But SVM does not output a probability
     # train_y = np.argmax(train_y, axis=1)
@@ -138,7 +140,7 @@ def train(train_data, test_data):
         with tf.variable_scope('multilayer', reuse=True):
             mtest = multilayer.Model(config, is_train=False)
         # checkpoint
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=1)
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=1)
         save_path = os.path.join(out_dir, 'model.ckpt')
         try:
             summary_op = tf.summary.merge_all()
@@ -329,12 +331,17 @@ def train(train_data, test_data):
 
 
 def label(eval_data, config):
+    print(eval_data.shape)
+    eval_x = get_key_phrases(eval_data)
+
+    pretrained_embedding = np.load(os.path.join(config["data_dir"], 'emb.npy'))
+    eval_x = key_phrase_indices_to_embedding(eval_x, pretrained_embedding)
     """ Build evaluation graph and run. """
 
     with tf.Graph().as_default():
-        with tf.variable_scope('cnn'):
+        with tf.variable_scope('multilayer'):
             m = multilayer.Model(config, is_train=False)
-        saver = tf.train.Saver(tf.all_variables())
+        saver = tf.train.Saver(tf.global_variables())
 
         tf_config = tf.ConfigProto()
         if config.get("gpu_percentage", 0) > 0:
@@ -352,8 +359,7 @@ def label(eval_data, config):
 
             print "\nStart evaluation\n"
 
-            x_data = np.array(eval_data)
-            data_size = x_data.shape[0]
+            data_size = eval_x.shape[0]
             batch_size = 10
             actual_output = []
 
@@ -369,19 +375,20 @@ def label(eval_data, config):
                     #         m.right: np.array(right_batch),
                     #         m.labels: np.array(y_batch)}
                 else:
-                    x_batch = eval_data[start_i:end_i]
+                    x_batch = eval_x[start_i:end_i]
                     feed = {m.inputs: x_batch}
                 current_actual_output, = sess.run([m.scores], feed_dict=feed)
                 actual_output.append(current_actual_output)
                 start_i = end_i
     actual_output = np.concatenate(actual_output,axis=0)
-    return x_data, actual_output
+    return eval_data, actual_output
 
 def _summary_for_scalar(name, value):
     return tf.Summary(value=[tf.Summary.Value(tag=name, simple_value=float(value))])
 
 
 def main(argv=None):
+    FLAGS = tf.app.flags.FLAGS
     if not os.path.exists(FLAGS.train_dir):
         os.mkdir(FLAGS.train_dir)
 
@@ -403,4 +410,5 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
+    define_flags()
     tf.app.run()

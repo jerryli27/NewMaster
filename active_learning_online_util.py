@@ -11,8 +11,8 @@ import numpy as np
 
 import util
 import preprocessing_util
+import train
 from label import label
-from train import train
 from active_learning_offline_util import save_additional_label
 
 class ActiveLabelingUtilOnline:
@@ -179,6 +179,7 @@ class CNNTrainerOnline:
     def start_train(self):
         # TODO: train uses lots of flags. Should I refactor the code? Or should I just call os?  If I call os, I don't
         # even need to load the train_data.
-        train(self.train_data, self.test_data)
+        train.define_flags()  # Maybe this does not work...
+        train.train(self.train_data, self.test_data)
 
 

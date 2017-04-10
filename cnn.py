@@ -16,19 +16,20 @@ import tensorflow as tf
 
 import neural_util
 
-# model parameters
-tf.app.flags.DEFINE_integer('batch_size', 100, 'Training batch size')
-tf.app.flags.DEFINE_integer('word_emb_size', 300, 'Size of word embeddings')
-tf.app.flags.DEFINE_integer('pos_emb_size', 50, 'Size of positional embeddings')
-tf.app.flags.DEFINE_integer('num_kernel', 100, 'Number of filters for each window size')
-tf.app.flags.DEFINE_integer('min_window', 3, 'Minimum size of filter window')
-tf.app.flags.DEFINE_integer('max_window', 5, 'Maximum size of filter window')
-tf.app.flags.DEFINE_integer('vocab_size', 40000, 'Vocabulary size')
-tf.app.flags.DEFINE_integer('num_classes', 3, 'Number of class to consider')
-tf.app.flags.DEFINE_integer('sent_len', 128, 'Input sentence length.')
-tf.app.flags.DEFINE_float('l2_reg', 1e-4, 'l2 regularization weight')
-tf.app.flags.DEFINE_boolean('attention', False, 'Whether use attention or not')
-tf.app.flags.DEFINE_boolean('multi_label', False, 'Multilabel or not')
+def define_flags():
+    # model parameters
+    tf.app.flags.DEFINE_integer('batch_size', 100, 'Training batch size')
+    tf.app.flags.DEFINE_integer('word_emb_size', 300, 'Size of word embeddings')
+    tf.app.flags.DEFINE_integer('pos_emb_size', 50, 'Size of positional embeddings')
+    tf.app.flags.DEFINE_integer('num_kernel', 100, 'Number of filters for each window size')
+    tf.app.flags.DEFINE_integer('min_window', 3, 'Minimum size of filter window')
+    tf.app.flags.DEFINE_integer('max_window', 5, 'Maximum size of filter window')
+    tf.app.flags.DEFINE_integer('vocab_size', 40000, 'Vocabulary size')
+    tf.app.flags.DEFINE_integer('num_classes', 3, 'Number of class to consider')
+    tf.app.flags.DEFINE_integer('sent_len', 128, 'Input sentence length.')
+    tf.app.flags.DEFINE_float('l2_reg', 1e-4, 'l2 regularization weight')
+    tf.app.flags.DEFINE_boolean('attention', False, 'Whether use attention or not')
+    tf.app.flags.DEFINE_boolean('multi_label', False, 'Multilabel or not')
 
 
 
@@ -38,8 +39,13 @@ def _variable_on_cpu(name, shape, initializer):
         var = tf.get_variable(name, shape, initializer=initializer)
     return var
 
-def _variable_with_weight_decay(name, shape, initializer, wd):
-    var = _variable_on_cpu(name, shape, initializer)
+def _variable_on_gpu(name, shape, initializer):
+    with tf.device('/cpu:0'):
+        var = tf.get_variable(name, shape, initializer=initializer)
+    return var
+
+def _variable_with_weight_decay(name, shape, initializer, wd, use_gpu = False):
+    var = _variable_on_cpu(name, shape, initializer) if not use_gpu else _variable_on_gpu(name, shape, initializer)
     if wd is not None and wd != 0.:
         weight_decay = tf.mul(tf.nn.l2_loss(var), wd, name='weight_loss')
     else:
@@ -79,11 +85,11 @@ class Model(object):
             self.dropout = config['dropout']
         if config.get("gpu_percentage",0) > 0:
             self.gpu_percentage = config["gpu_percentage"]
-            self.use_cpu = False
+            self.use_gpu = True
         else:
             # TODO: need to change where the variable is located. All variables are now located on cpu.
             self.gpu_percentage = 0
-            self.use_cpu = True
+            self.use_gpu = False
         if config['hide_key_phrases']:
             self.hide_key_phrases = True
         else:
@@ -104,8 +110,14 @@ class Model(object):
         # lookup layer
         with tf.variable_scope('embedding') as scope:
             self._W_emb = _variable_on_cpu(name='embedding', shape=[self.vocab_size, self.word_emb_size],
+                                           initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0)) \
+                if not self.use_gpu else _variable_on_gpu(name='embedding', shape=[self.vocab_size, self.word_emb_size],
                                            initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0))
             self._relative_distance_emb = _variable_on_cpu(name='relative_distance_embedding',
+                                                           shape=[self.sent_len * 2 - 1, self.pos_emb_size],
+                                                           initializer=tf.random_uniform_initializer(minval=-1.0,
+                                                                                                     maxval=1.0)) \
+                if not self.use_gpu else _variable_on_gpu(name='relative_distance_embedding',
                                                            shape=[self.sent_len * 2 - 1, self.pos_emb_size],
                                                            initializer=tf.random_uniform_initializer(minval=-1.0,
                                                                                                      maxval=1.0))
@@ -130,7 +142,10 @@ class Model(object):
                 conv = tf.nn.conv2d(input=sent_batch, filter=kernel, strides=[1,1,1,1], padding='VALID')
                 biases = _variable_on_cpu(name='bias-%d' % k_size,
                                           shape=[self.num_kernel],
-                                          initializer=tf.constant_initializer(0.0))
+                                          initializer=tf.constant_initializer(0.0)) \
+                    if not self.use_gpu else _variable_on_gpu(name='bias-%d' % k_size,
+                                                              shape=[self.num_kernel],
+                                                              initializer=tf.constant_initializer(0.0))
                 bias = tf.nn.bias_add(conv, biases)
                 activation = tf.nn.relu(bias, name=scope.name)
                 # shape of activation: [batch_size, conv_len, 1, num_kernel]
@@ -155,9 +170,11 @@ class Model(object):
         with tf.variable_scope('output') as scope:
             W, wd = _variable_with_weight_decay('W', shape=[pool_size, self.num_classes],
                                                 initializer=tf.truncated_normal_initializer(stddev=0.05),
-                                                wd=self.l2_reg)
+                                                wd=self.l2_reg, use_gpu=self.use_gpu)
             losses.append(wd)
             biases = _variable_on_cpu('bias', shape=[self.num_classes],
+                                      initializer=tf.constant_initializer(0.01)) \
+                if not self.use_gpu else _variable_on_gpu('bias', shape=[self.num_classes],
                                       initializer=tf.constant_initializer(0.01))
             self.logits = tf.nn.bias_add(tf.matmul(pool_dropout, W), biases, name='logits')
 
@@ -229,7 +246,7 @@ class Model(object):
             self._train_op = opt.apply_gradients(grads)
 
             for var in tf.trainable_variables():
-                tf.histogram_summary(var.op.name, var)
+                tf.summary.histogram(var.op.name, var)
         else:
             self._train_op = tf.no_op()
 

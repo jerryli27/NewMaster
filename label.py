@@ -35,7 +35,7 @@ def label(eval_data, config):
             else:
                 import cnn
                 m = cnn.Model(config, is_train=False)
-        saver = tf.train.Saver(tf.all_variables())
+        saver = tf.train.Saver(tf.global_variables())
 
         tf_config = tf.ConfigProto()
         if config.get("gpu_percentage", 0) > 0:

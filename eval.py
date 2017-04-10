@@ -47,7 +47,7 @@ def evaluate(eval_data, config):
             else:
                 import cnn
                 m = cnn.Model(config, is_train=False)
-        saver = tf.train.Saver(tf.all_variables())
+        saver = tf.train.Saver(tf.global_variables())
 
         with tf.Session() as sess:
             ckpt = tf.train.get_checkpoint_state(config['train_dir'])
@@ -56,7 +56,7 @@ def evaluate(eval_data, config):
             else:
                 raise IOError("Loading checkpoint file failed!")
 
-            #embeddings = sess.run(tf.all_variables())[0]
+            #embeddings = sess.run(tf.global_variables())[0]
 
             print "\nStart evaluation\n"
             #losses = []

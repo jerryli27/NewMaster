@@ -167,3 +167,7 @@ TODO: Build a key phrase classifier.
     Yeah the pipeline works but the quality is low. It is labeling too many instances because the model is over
     confident (couldn't blame it really because it is trained to output either 0 or 1.
     I should implement the key phrase classifier. I should also re-read the paper.
+
+2017/04/10
+    The co-training is almost working. Now I just have to evaluate how well it does by setting aside a test set not
+    used for co-training. I also forgot to do inferring at each round.

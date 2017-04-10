@@ -33,13 +33,14 @@ def get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab):
     return key_phrases
 
 
-def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, save_source_path = None, save_target_path = None, save_unlabeled_kp_path=None):
-    if save_source_path is None:
-        save_source_path = os.path.splitext(source_path)[0] + "_inferred.txt"
-    if save_target_path is None:
-        save_target_path = os.path.splitext(target_path)[0] + "_inferred.txt"
-    if save_unlabeled_kp_path is None:
-        save_unlabeled_kp_path = os.path.join(os.path.dirname(source_path), "unlabeled_kp.npy")
+def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, do_save=False, save_source_path = None, save_target_path = None, save_unlabeled_kp_path=None):
+    if do_save:
+        if save_source_path is None:
+            save_source_path = os.path.splitext(source_path)[0] + "_inferred.txt"
+        if save_target_path is None:
+            save_target_path = os.path.splitext(target_path)[0] + "_inferred.txt"
+        if save_unlabeled_kp_path is None:
+            save_unlabeled_kp_path = os.path.join(os.path.dirname(source_path), "unlabeled_kp.npy")
 
 
     labeled_data, labeled_result = read_data_labeled_part(source_path, target_path, sentence_length, shuffle=False)
@@ -80,10 +81,14 @@ def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, sa
 
     print('Labeled %d additional sentences out of %d unlabeled sentences. There are %d unlabeled key phrase pairs left.'
           % (len(additional_label_result), num_unlabeled_data, len(unlabeled_kp)))
-    save_additional_label(unlabeled_data, additional_label_index, additional_label_result, labeled_data, labeled_result,
-                          save_source_path, save_target_path)
-    unlabeled_kp = np.array(list(unlabeled_kp), dtype=np.int32)
-    np.save(save_unlabeled_kp_path, unlabeled_kp)
+    if do_save:
+        if save_source_path is not None and save_target_path is not None:
+            save_additional_label(unlabeled_data, additional_label_index, additional_label_result, labeled_data, labeled_result,
+                                  save_source_path, save_target_path)
+        if save_unlabeled_kp_path is not None:
+            unlabeled_kp = np.array(list(unlabeled_kp), dtype=np.int32)
+            np.save(save_unlabeled_kp_path, unlabeled_kp)
+    return additional_label_index, additional_label_result
 
 def save_all_unlabeled_kp_pair(source_path, target_path, sentence_length, vocab_path, save_path=None):
     if save_path is None:
@@ -138,4 +143,4 @@ if __name__ == "__main__":
     source_path = os.path.join(restore_param['data_dir'], 'test_cs_unlabeled_data_combined.txt')
     target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
     vocab_path = os.path.join(restore_param['data_dir'], 'test_cs_vocab_combined')
-    infer_from_labeled(source_path,target_path,restore_param['sent_len'],vocab_path)
+    infer_from_labeled(source_path,target_path,restore_param['sent_len'],vocab_path, do_save=True)

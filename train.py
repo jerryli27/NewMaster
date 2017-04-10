@@ -11,41 +11,42 @@ import numpy as np
 import cnn
 import util
 
-
-FLAGS = tf.app.flags.FLAGS
-
-# train parameters
-this_dir = os.path.abspath(os.path.dirname(__file__))
-tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'hand_label_context_tool'), 'Directory of the data')
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'),
-                           'Directory to save training checkpoint files')
-tf.app.flags.DEFINE_integer('train_size', 100000, 'Number of training examples')
-tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs to run')
-tf.app.flags.DEFINE_boolean('use_pretrain', False, 'Use word2vec pretrained embeddings or not')
-tf.app.flags.DEFINE_boolean('log_device_placement', False, 'Whether log device information in summary')
-
-tf.app.flags.DEFINE_string('optimizer', 'adam',
-                           'Optimizer to use. Must be one of "sgd", "adagrad", "adadelta" and "adam"')
-tf.app.flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate')
-tf.app.flags.DEFINE_float('lr_decay', 0.95, 'LR decay rate')
-tf.app.flags.DEFINE_integer('tolerance_step', 500,
-                            'Decay the lr after loss remains unchanged for this number of steps')
-tf.app.flags.DEFINE_float('dropout', 0.5, 'Dropout rate. 0 is no dropout.')
-tf.app.flags.DEFINE_boolean('hide_key_phrases', False, 'Whether to hide the key phrase pair in the input sentence by '
-                                                       'replacing them with UNK.')
-
-# logging
-tf.app.flags.DEFINE_integer('log_step', 10, 'Display log to stdout after this step')
-tf.app.flags.DEFINE_integer('summary_step', 50,
-                            'Write summary (evaluate model on dev set) after this step')
-tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
-
-# Device option
-tf.app.flags.DEFINE_float('gpu_percentage', -1, "The percentage of gpu this program can use. "
-                                                 "Set to <= 0 for cpu mode.")
+def define_flags():
 
 
-def train(train_data, test_data):
+    # train parameters
+    this_dir = os.path.abspath(os.path.dirname(__file__))
+    tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'hand_label_context_tool'), 'Directory of the data')
+    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints'),
+                               'Directory to save training checkpoint files')
+    tf.app.flags.DEFINE_integer('train_size', 100000, 'Number of training examples')
+    tf.app.flags.DEFINE_integer('num_epochs', 20, 'Number of epochs to run')
+    tf.app.flags.DEFINE_boolean('use_pretrain', False, 'Use word2vec pretrained embeddings or not')
+    tf.app.flags.DEFINE_boolean('log_device_placement', False, 'Whether log device information in summary')
+
+    tf.app.flags.DEFINE_string('optimizer', 'adam',
+                               'Optimizer to use. Must be one of "sgd", "adagrad", "adadelta" and "adam"')
+    tf.app.flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate')
+    tf.app.flags.DEFINE_float('lr_decay', 0.95, 'LR decay rate')
+    tf.app.flags.DEFINE_integer('tolerance_step', 500,
+                                'Decay the lr after loss remains unchanged for this number of steps')
+    tf.app.flags.DEFINE_float('dropout', 0.5, 'Dropout rate. 0 is no dropout.')
+    tf.app.flags.DEFINE_boolean('hide_key_phrases', False, 'Whether to hide the key phrase pair in the input sentence by '
+                                                           'replacing them with UNK.')
+
+    # logging
+    tf.app.flags.DEFINE_integer('log_step', 10, 'Display log to stdout after this step')
+    tf.app.flags.DEFINE_integer('summary_step', 50,
+                                'Write summary (evaluate model on dev set) after this step')
+    tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
+
+    # Device option
+    tf.app.flags.DEFINE_float('gpu_percentage', -1, "The percentage of gpu this program can use. "
+                                                     "Set to <= 0 for cpu mode.")
+
+
+
+def train(train_data, test_data, FLAGS = tf.app.flags.FLAGS):
     # train_dir
     timestamp = str(int(time.time()))
     out_dir = os.path.abspath(os.path.join(FLAGS.train_dir, timestamp))
@@ -75,7 +76,7 @@ def train(train_data, test_data):
             mtest = cnn.Model(config, is_train=False)
 
         # checkpoint
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=1)
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=1)
         save_path = os.path.join(out_dir, 'model.ckpt')
         try:
             summary_op = tf.summary.merge_all()
@@ -237,6 +238,7 @@ def _summary_for_scalar(name, value):
 
 
 def main(argv=None):
+    FLAGS = tf.app.flags.FLAGS
     if not os.path.exists(FLAGS.train_dir):
         os.mkdir(FLAGS.train_dir)
 
@@ -258,4 +260,6 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
+    cnn.define_flags()
+    define_flags()
     tf.app.run()

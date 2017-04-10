@@ -8,8 +8,6 @@ import os
 import csv
 import tensorflow as tf
 import numpy as np
-import pandas as pd
-
 
 import util
 import preprocessing_util
@@ -30,12 +28,16 @@ def save_additional_label(unlabeled_data, additional_label_index, additional_lab
     np.savetxt(source_path, data_x, delimiter=' ', fmt='%d')
     util.save_labels_file(data_y,target_path)
 
-def main(argv=None):
+def main(argv):
     restore_param = util.load_from_dump(os.path.join(FLAGS.train_dir, 'flags.cPickle'))
     restore_param['train_dir'] = FLAGS.train_dir
-
-    source_path = os.path.join(restore_param['data_dir'], 'test_cs_unlabeled_data_combined.txt')
-    target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
+    if argv is not None:
+        source_path = argv[1]
+        target_path = argv[2]
+    if source_path is None:
+        source_path = os.path.join(restore_param['data_dir'], 'test_cs_unlabeled_data_combined.txt')
+    if target_path is None:
+        target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
     vocab_path = os.path.join(restore_param['data_dir'], 'test_cs_vocab_combined')
 
     labeled_data, labeled_result = util.read_data_labeled_part(source_path, target_path, restore_param['sent_len'],
@@ -69,7 +71,7 @@ def main(argv=None):
     #     print('%s\t%s\t\t%s\t'
     #           % (current_type, ' '.join(sentence), str(actual_output_softmax[sentence_i])))
 
-    with open('labeled_dataset_human.csv','w') as f:
+    with open(os.path.join(FLAGS.train_dir, 'labeled_dataset_human.csv'),'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(['Key phrase pair(separated by one space)','Sentence(Key phrase labeled with *)','(Label)A is-a B','B is-a A','Neither'])
         for sentence_i in range(data_size):
@@ -101,6 +103,7 @@ if __name__ == '__main__':
     this_dir = os.path.abspath(os.path.dirname(__file__))
 
     # eval parameters
-    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'checkpoints/1485596219'), 'Directory of the checkpoint files')
-    tf.app.run()
+    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'sanity_check_co_training/1491833701'), 'Directory of the checkpoint files')
+    tf.app.run(main=main, argv=("","sanity_check_co_training/1491833701/test_cs_unlabeled_data_combined_round_4.txt",
+                                "sanity_check_co_training/1491833701/test_cs_labels_combined_round_4.txt"))
 
