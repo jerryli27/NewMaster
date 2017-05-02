@@ -8,7 +8,8 @@ from util import read_data_labeled_part, read_data_unlabeled_part, load_from_dum
 from active_learning_offline_util import save_additional_label
 
 
-def get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab):
+
+def get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab = None, label_reverse = False):
     """
 
     :param labeled_data: np array representing labeled sentences.
@@ -16,12 +17,13 @@ def get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab):
     :return: a dictionary with key = (key phrase 1, key phrase 2) and value = the label marked for that key phrase. If
     there are multiple labels and they are different, throw assertion error?
     """
+    # TODO: edit the comment and add the label reverse comments.
+
     sentence_indices_input = labeled_data[:,:-2]
     kp_indices_input = labeled_data[:,-2:]
     key_phrases = {}
-    for i in range(labeled_data.shape[0]):
-        current_kp = tuple(sentence_indices_input[i,kp_indices_input[i,:]])
-        current_label = labeled_result[i]
+
+    def _get_all_kp_pair_from_labeled_util(current_kp, current_label):
         if current_kp in key_phrases:
             if np.any(key_phrases[current_kp] != current_label):
                 raise AssertionError("The key phrase pair %s:%s does not have a consistent label. "
@@ -30,10 +32,30 @@ def get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab):
                                        str(key_phrases[current_kp]), str(current_label)))
         else:
             key_phrases[current_kp] = current_label
+
+    for i in range(labeled_data.shape[0]):
+        current_kp = tuple(sentence_indices_input[i,kp_indices_input[i,:]])
+        current_label = labeled_result[i]
+        _get_all_kp_pair_from_labeled_util(current_kp, current_label)
+        if label_reverse:
+            assert len(current_label.shape) == 1 and current_label.shape[0] == 3
+            current_kp = tuple(sentence_indices_input[i, kp_indices_input[i, :]][::-1])
+            if np.argmax(current_label) == 0:
+                # Original label is A is a B, now we reverse the key phrase pair and label it B is a A
+                current_label = np.array([0,1,0])
+            elif np.argmax(current_label) == 1:
+                # Original label is A is a B, now we reverse the key phrase pair and label it B is a A
+                current_label = np.array([1, 0, 0])
+            else:
+                # Original label is Neither, then reverse the pair and the answer should also be neither.
+                current_label = np.array([0, 0, 1])
+            _get_all_kp_pair_from_labeled_util(current_kp, current_label)
+
     return key_phrases
 
 
-def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, do_save=False, save_source_path = None, save_target_path = None, save_unlabeled_kp_path=None):
+def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, do_save=False, save_source_path = None,
+                       save_target_path = None, save_unlabeled_kp_path=None, label_reverse = True):
     if do_save:
         if save_source_path is None:
             save_source_path = os.path.splitext(source_path)[0] + "_inferred.txt"
@@ -60,7 +82,7 @@ def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, do
     num_labeled_data = labeled_data.shape[0]
     num_unlabeled_data = unlabeled_data.shape[0]
 
-    kp_label_dict = get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab)
+    kp_label_dict = get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab, label_reverse = label_reverse)
 
     # Now go through all unlabeled data, check whether their key phrase pairs appeared before, and if so, apply the
     # labeled result on the unlabeled pairs, because we assume that if one key phrase is labeled once, its label will
@@ -90,7 +112,7 @@ def infer_from_labeled(source_path, target_path, sentence_length, vocab_path, do
             np.save(save_unlabeled_kp_path, unlabeled_kp)
     return additional_label_index, additional_label_result
 
-def save_all_unlabeled_kp_pair(source_path, target_path, sentence_length, vocab_path, save_path=None):
+def save_all_unlabeled_kp_pair(source_path, target_path, sentence_length, vocab_path, save_path=None, label_reverse = False):
     if save_path is None:
         save_path = os.path.join(os.path.dirname(source_path), "unlabeled_kp.npy")
 
@@ -110,7 +132,7 @@ def save_all_unlabeled_kp_pair(source_path, target_path, sentence_length, vocab_
     num_labeled_data = labeled_data.shape[0]
     num_unlabeled_data = unlabeled_data.shape[0]
 
-    kp_label_dict = get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab)
+    kp_label_dict = get_all_kp_pair_from_labeled(labeled_data, labeled_result, rev_vocab, label_reverse = label_reverse)
 
     # Now go through all unlabeled data, check whether their key phrase pairs appeared before, and if so, apply the
     # labeled result on the unlabeled pairs, because we assume that if one key phrase is labeled once, its label will

@@ -94,8 +94,8 @@ def train(train_data, test_data, FLAGS = tf.app.flags.FLAGS):
             )
         sess = tf.Session(config=config)
         with sess.as_default():
-            train_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "train"), graph=sess.graph)
-            dev_summary_writer = tf.train.SummaryWriter(os.path.join(out_dir, "dev"), graph=sess.graph)
+            train_summary_writer = tf.summary.FileWriter(os.path.join(out_dir, "train"), graph=sess.graph)
+            dev_summary_writer = tf.summary.FileWriter(os.path.join(out_dir, "dev"), graph=sess.graph)
             try:
                 sess.run(tf.global_variables_initializer())
             except:

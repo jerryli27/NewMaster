@@ -228,7 +228,7 @@ def read_data(source_path, target_path, sent_len, attention_path=None, train_siz
     return shuffle_split(_X, _y, a=_a, train_size=train_size, shuffle=shuffle, random_seed=random_seed)
 
 
-def read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=True, shuffle_seed = None):
+def read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=True, shuffle_seed = None, hide_key_phrases = False):
     """Read source(x), target(y) and attention if given.
 
     Original taken from
@@ -256,6 +256,11 @@ def read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=True, s
                 # The data should already be padded so it doesn;t need to do padding here.
                 # if sent_len > len(source_ids):
                 #     source_ids += [PAD_ID] * (sent_len - len(source_ids))
+                # Assign the ids of the key phrase pair to 0
+                if hide_key_phrases:
+                    source_ids[source_ids[len(source_ids) - 1]] = 0
+                    source_ids[source_ids[len(source_ids) - 2]] = 0
+
                 assert len(source_ids) == sent_len + 2  # 2 represent the 2 indices for the key phrases.
 
 
@@ -273,7 +278,7 @@ def read_data_unlabeled_part(source_path, target_path, sent_len, shuffle=True, s
 
 
 
-def read_data_labeled_part(source_path, target_path, sent_len, shuffle=True, shuffle_seed = None):
+def read_data_labeled_part(source_path, target_path, sent_len, shuffle=True, shuffle_seed = None, hide_key_phrases=False):
     """Read source(x), target(y) and attention if given.
 
     Original taken from
@@ -294,11 +299,15 @@ def read_data_labeled_part(source_path, target_path, sent_len, shuffle=True, shu
                 #    print("  reading data line %d" % counter)
                 #    sys.stdout.flush()
                 source_ids = [np.int64(x.strip()) for x in source.split()]
+
                 # The data should already be padded so it doesn;t need to do padding here.
                 # if sent_len > len(source_ids):
                 #     source_ids += [PAD_ID] * (sent_len - len(source_ids))
                 assert len(source_ids) == sent_len + 2  # 2 represent the 2 indices for the key phrases.
 
+                if hide_key_phrases:
+                    source_ids[source_ids[len(source_ids) - 1]] = 0
+                    source_ids[source_ids[len(source_ids) - 2]] = 0
                 # target = target.split('\t')[0].strip()
                 target_ids = [np.float32(y.strip()) for y in target.split()]
 

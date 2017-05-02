@@ -90,7 +90,7 @@ class Model(object):
             # TODO: need to change where the variable is located. All variables are now located on cpu.
             self.gpu_percentage = 0
             self.use_gpu = False
-        if config['hide_key_phrases']:
+        if config.get('hide_key_phrases',False):
             self.hide_key_phrases = True
         else:
             self.hide_key_phrases = False

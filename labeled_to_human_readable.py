@@ -103,7 +103,10 @@ if __name__ == '__main__':
     this_dir = os.path.abspath(os.path.dirname(__file__))
 
     # eval parameters
-    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'sanity_check_co_training/1491833701'), 'Directory of the checkpoint files')
-    tf.app.run(main=main, argv=("","sanity_check_co_training/1491833701/test_cs_unlabeled_data_combined_round_4.txt",
-                                "sanity_check_co_training/1491833701/test_cs_labels_combined_round_4.txt"))
+    # tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'sanity_check_co_training/1492024045'), 'Directory of the checkpoint files')
+    # tf.app.run(main=main, argv=("","sanity_check_co_training/1492024045/test_cs_unlabeled_data_combined_round_1.txt",
+    #                             "sanity_check_co_training/1492024045/test_cs_labels_combined_round_1.txt"))
+    tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'sanity_check_hide_key_phrases/1490897591'), 'Directory of the checkpoint files')
+    tf.app.run(main=main, argv=("","inferred_dataset/test_cs_unlabeled_data_combined_inferred.txt",
+                                "inferred_dataset/test_cs_labels_combined_inferred.txt"))
 

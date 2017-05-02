@@ -124,10 +124,6 @@ def train(train_data, test_data, FLAGS = tf.app.flags.FLAGS):
     FLAGS._parse_flags()
     config = dict(FLAGS.__flags.items())
 
-    # Window_size must not be larger than the sent_len
-    if config['sent_len'] < config['max_window']:
-        config['max_window'] = config['sent_len']
-
     util.dump_to_file(os.path.join(out_dir, 'flags.cPickle'), config)
 
 
@@ -397,18 +393,13 @@ def main(argv=None):
     # target_path = os.path.join(FLAGS.data_dir, 'target.txt')
     source_path = os.path.join(FLAGS.data_dir, 'test_cs_unlabeled_data_combined.txt')
     target_path = os.path.join(FLAGS.data_dir, 'test_cs_labels_combined.txt')
-    attention_path = None
-    if FLAGS.attention:
-        if os.path.exists(os.path.join(FLAGS.data_dir, 'source.att')):
-            attention_path = os.path.join(FLAGS.data_dir, 'source.att')
-        else:
-            raise ValueError("Attention file %s not found.", os.path.join(FLAGS.data_dir, 'source.att'))
     train_data, test_data = util.read_data(source_path, target_path, FLAGS.sent_len,
-                                           attention_path=attention_path, train_size=FLAGS.train_size,
+                                           attention_path=None, train_size=FLAGS.train_size,
                                            hide_key_phrases=FLAGS.hide_key_phrases)
     train(train_data, test_data)
 
 
 if __name__ == '__main__':
     define_flags()
+    multilayer.define_flags()
     tf.app.run()

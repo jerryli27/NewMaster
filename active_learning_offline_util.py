@@ -28,6 +28,8 @@ def save_additional_label(unlabeled_data, additional_label_index, additional_lab
         indices_not_included = [i for i in range(num_unlabeled) if i not in additional_label_index_set]
         data_x = np.concatenate((labeled_data, unlabeled_data[additional_label_index,...], unlabeled_data[indices_not_included,...]),axis=0)
         data_y  = np.concatenate((labels, additional_label_result), axis=0)
+        print("Saved %d additional instances. Number of unlabeld instance remaining: %d"
+              %(len(additional_label_index_set), len(indices_not_included)))
 
     np.savetxt(source_path, data_x, delimiter=' ', fmt='%d')
     util.save_labels_file(data_y,target_path)

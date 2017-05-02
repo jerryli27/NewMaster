@@ -97,24 +97,27 @@ def evaluate(eval_data, config):
 
     x_batch = np.array(x_batch)
     y_batch = np.array(y_batch)
-    plot_precision_recall(y_batch,actual_output)
+    # Now calculate the true probability distribution using softmax.
+    actual_output_exp = np.exp(actual_output)
+    actual_output_softmax = actual_output_exp / np.sum(actual_output_exp, axis=1, keepdims=True)
+    plot_precision_recall(y_batch,actual_output_softmax)
 
     return pre, rec, x_batch, y_batch, actual_output
 
-def plot_precision_recall(y_acutal_output, y_expected_output):
+def plot_precision_recall(y_expected_output, y_actual_output):
     # The majority of the code is taken from
     # http://scikit-learn.org/stable/auto_examples/model_selection/plot_precision_recall.html
-    assert len(y_acutal_output.shape) == 2
+    assert len(y_expected_output.shape) == 2
 
-    n_classes = y_acutal_output.shape[1]
+    n_classes = y_expected_output.shape[1]
 
     precision = dict()
     recall = dict()
     average_precision = dict()
     for i in range(n_classes):
-        precision[i], recall[i], _ = precision_recall_curve(y_acutal_output[:, i],
-                                                            y_expected_output[:, i])
-        average_precision[i] = average_precision_score(y_acutal_output[:, i], y_expected_output[:, i])
+        precision[i], recall[i], _ = precision_recall_curve(y_expected_output[:, i],
+                                                            y_actual_output[:, i])
+        average_precision[i] = average_precision_score(y_expected_output[:, i], y_actual_output[:, i])
 
     # Plot Precision-Recall curve
 
@@ -144,7 +147,7 @@ def main(argv=None):
     target_path = os.path.join(restore_param['data_dir'], 'test_cs_labels_combined.txt')
     vocab_path = os.path.join(restore_param['data_dir'], 'test_cs_vocab_combined')
     _, data = util.read_data(source_path, target_path, restore_param['sent_len'],
-                             train_size=restore_param['train_size'], hide_key_phrases=restore_param['hide_key_phrases'])
+                             train_size=restore_param['train_size'], hide_key_phrases=restore_param.get('hide_key_phrases', False))
 
     pre, rec, x_input, expected_output, actual_output = evaluate(data, restore_param)
 

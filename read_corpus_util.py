@@ -16,13 +16,14 @@ import csv
 import os
 import re
 import string
+from collections import Counter
 
 import progressbar
 
 import trie_util
 from trie_util import join_entity_names
 
-kCorpusDirectory = "/home/xor/MasterData/"
+kCorpusDirectory = "/mnt/06CAF857CAF84489/datasets/MasterData/"
 kRegexAlphaNumOnly = re.compile('([^\sa-zA-Z]|_)+')
 kRegexMultipleWhiteSpace = re.compile('\s\s+')
 kRegexAsciiOnly = re.compile('[^\x00-\x7F]+')
@@ -75,6 +76,7 @@ def read_key_phrases(corpus_directory, to_lower=True, key_phrases_folder = 'keyp
     files = all_files_in_dir(key_phrases_directory)
     paper_key_phrases_dict = {}  # key = paperid and value = key phrases for that paper.
     key_phrases_set = set()
+    key_phrases_count = Counter()
     num_papers = 0
     bar = progressbar.ProgressBar(max_value=len(files))
     for i_files, file_name in enumerate(files):
@@ -85,14 +87,17 @@ def read_key_phrases(corpus_directory, to_lower=True, key_phrases_folder = 'keyp
                 paper_key_phrases_dict[line[0]] = line[1:]
                 for key_phrase in line[1:]:
                     if to_lower:
-                        key_phrases_set.add(key_phrase.lower())
+                        kp_lower = key_phrase.lower()
+                        key_phrases_set.add(kp_lower)
+                        key_phrases_count[kp_lower] += 1
                     else:
                         key_phrases_set.add(key_phrase)
+                        key_phrases_count[key_phrase] += 1
         bar.update(i_files)
     assert num_papers == len(paper_key_phrases_dict)
-    print("\nFinished reading ns entities. There are %d papers and %d unique key phrases in total."
+    print("\nFinished reading key phrases. There are %d papers and %d unique key phrases in total."
           % (len(paper_key_phrases_dict), len(key_phrases_set)))
-    return paper_key_phrases_dict, key_phrases_set
+    return paper_key_phrases_dict, key_phrases_set, key_phrases_count
 
 
 # This function finds the papers folder under corpus directory, and returns a string containing only preprocessed
@@ -168,24 +173,51 @@ def preprocess_corpus(s, trie, to_lower=False, no_punctuations=False, no_special
 
 # This function tries to find the key phrases dictionary file under the corpus directory, open the files, and output a
 # dict with key = key phrases and value = number of occurrence. It also outputs a set of key phrases in all the papers.
-def read_key_phrases_dict(corpus_directory, to_lower=False, key_phrases_folder = '.', count_threshold = 5):
-    key_phrases_directory = corpus_directory + '/' + key_phrases_folder + '/keyphrases.dict'
+def read_key_phrases_dict(corpus_directory, to_lower=False, key_phrases_folder = '/mnt/06CAF857CAF84489/papers-corpus/', count_threshold = 5):
+    key_phrases_file_path = os.path.join(corpus_directory, 'keyphrases.dict')
     key_phrases_dict = {}
     key_phrases_set = set()
 
-    with open(key_phrases_directory, 'r') as f:
-        csv_reader = csv.reader(f, delimiter='\t')
-        for line in csv_reader:
-            if len(line) == 2:
-                current_count = int(line[0])
-                if current_count < count_threshold:
-                    break
-                if to_lower:
-                    key_phrases_set.add(line[1].lower())
-                    key_phrases_dict[line[1].lower()] = current_count
-                else:
-                    key_phrases_set.add(line[1])
-                    key_phrases_dict[line[1]] = current_count
-    print("\nFinished reading key phrase dict. There are %d unique key phrases in total that has count over %d."
-          % (len(key_phrases_set), count_threshold))
-    return key_phrases_dict, key_phrases_set
+    if os.path.isfile(key_phrases_file_path):
+        print("Found pre generated dictionary file! Using that instead of reading all key phrases from scratch.")
+        with open(key_phrases_file_path, 'r') as f:
+            csv_reader = csv.reader(f, delimiter='\t')
+            for line in csv_reader:
+                if len(line) == 2:
+                    current_count = int(line[0])
+                    if current_count < count_threshold:
+                        break
+                    if to_lower:
+                        key_phrases_set.add(line[1].lower())
+                        key_phrases_dict[line[1].lower()] = current_count
+                    else:
+                        key_phrases_set.add(line[1])
+                        key_phrases_dict[line[1]] = current_count
+
+        print(
+        "\nFinished reading key phrase dict. There are %d unique key phrases in total that has count over %d."
+        % (len(key_phrases_set), count_threshold))
+        return key_phrases_dict, key_phrases_set
+    else:
+        if not os.path.exists(os.path.dirname(key_phrases_file_path)):
+            print("Making directory %s" %(os.path.dirname(key_phrases_file_path)))
+            os.makedirs(os.path.dirname(key_phrases_file_path))
+
+        _, _, key_phrases_count = read_key_phrases(key_phrases_folder, to_lower=to_lower)
+        # Sort the key phrase dictionary based on count.
+        key_phrases_count_sorted = key_phrases_count.most_common()
+
+
+        with open(key_phrases_file_path, 'w') as f:
+            csv_writer = csv.writer(f, delimiter='\t')
+            for i, (key_phrase, count) in enumerate(key_phrases_count_sorted):
+                csv_writer.writerow([key_phrase] + [count])
+                if count >= count_threshold:
+                    key_phrases_set.add(key_phrase)
+                    key_phrases_dict[key_phrase] = count
+
+
+
+        print("\nFinished reading key phrase dict. There are %d unique key phrases in total that has count over %d."
+              % (len(key_phrases_set), count_threshold))
+        return key_phrases_dict, key_phrases_set

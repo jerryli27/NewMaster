@@ -40,7 +40,7 @@ def clean_raw_corpus(save_dir, start=0, end= 5000, step=100, to_lower=False, no_
 
     # This reads all phrases.
     paper_dict, facet_dict, entity_names_set = read_corpus_util.read_ns_entities(read_corpus_util.kCorpusDirectory, to_lower=False)
-    paper_key_phrases_dict, key_phrases_set = read_corpus_util.read_key_phrases(read_corpus_util.kCorpusDirectory, to_lower=False)
+    paper_key_phrases_dict, key_phrases_set, _ = read_corpus_util.read_key_phrases(read_corpus_util.kCorpusDirectory, to_lower=False)
     all_phrases = list(entity_names_set.union(key_phrases_set))
     trie = trie_util.Trie(all_phrases)
 
@@ -65,7 +65,7 @@ def clean_text_file(save_dir, text_dir,to_lower=False, no_punctuations=False, no
 
 
 def extract_key_phrase_co_occurrences(text_paths, key_phrase_set, max_len=128, max_relative_distance = 15,
-                                      max_num_extract = 10000):
+                                      max_num_extract = 1000000):
     # type: (List[str], Set[str], int, int) -> List[Tuple[str,List[Tuple[int,int]]]]
     ret = []
     num_extracted = 0
@@ -279,9 +279,9 @@ def preprocess_from_text_to_unlabeled_data(text_paths, vocab_save_path, unlabele
         raise AssertionError('such as is in the key phrase set.')
 
     if context is None:
-        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences(text_paths,key_phrases_set, max_num_extract)
+        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences(text_paths,key_phrases_set, max_num_extract=max_num_extract)
     else:
-        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences_around_context(text_paths,key_phrases_set, context, max_num_extract)
+        sentence_key_phrase_pairs_list = extract_key_phrase_co_occurrences_around_context(text_paths,key_phrases_set, context, max_num_extract=max_num_extract)
     print("Finished finding co-occurrences.")
 
     kMaxSentenceLength = 128
@@ -383,9 +383,15 @@ if __name__=="__main__":
     #                                        'data/test_cs_vocab_such_as',
     #                                        'data/test_cs_unlabeled_data_such_as.txt', to_lower=True)
 
-    preprocess_from_text_to_unlabeled_data(['/home/xor/MasterData/cs_corpus_test.txt'],
-                                           'data/test_cs_vocab_random_large',
-                                           'data/test_cs_unlabeled_data_random_large.txt',context=None,to_lower=True, max_num_extract=1000000)
+    # Modified on 04/16/2017
+    # preprocess_from_text_to_unlabeled_data(['/home/xor/MasterData/cs_corpus_test.txt'],
+    #                                        'data/test_cs_vocab_random_large',
+    #                                        'data/test_cs_unlabeled_data_random_large.txt',context=None,to_lower=True,
+    #                                        max_num_extract=1000000)
+    preprocess_from_text_to_unlabeled_data(['/mnt/06CAF857CAF84489/datasets/MasterData/cs_corpus_test.txt'],
+                                           '/mnt/06CAF857CAF84489/datasets/MasterDataAll/cs_corpus_test_vocab',
+                                           '/mnt/06CAF857CAF84489/datasets/MasterDataAll/cs_corpus_test_unlabeled.txt',
+                                           context=None, to_lower=True, max_num_extract=1000000)
 
     # # pretrained embeddings
     # embedding_path = '/media/xor/D/google300/GoogleNews-vectors-negative300.bin'

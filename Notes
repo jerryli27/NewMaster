@@ -171,3 +171,81 @@ TODO: Build a key phrase classifier.
 2017/04/10
     The co-training is almost working. Now I just have to evaluate how well it does by setting aside a test set not
     used for co-training. I also forgot to do inferring at each round.
+2017/04/12
+    Accuracy actually decreased for the current version of co-training. What's going on?
+    I think the key phrase pair classifier is not good enough. Because when I look at which instances are added to the
+    training set, I can see that the quality of the ones chosen quickly deteriorates. At first I thought it was because
+    I was picking too much positive instances so I lowered it to 2, but it still got worse.
+
+    With 1 hidden layer of size 512:
+    Overall 80.851064% answers were correct.
+    Category 0 has f1 score: 0.000000, precision: 0.000000, and recall 0.000000
+    Category 1 has f1 score: 0.485714, precision: 0.586207, and recall 0.414634
+    Category 2 has f1 score: 0.882353, precision: 0.849057, and recall 0.918367
+
+    With 0 hidden layer
+    Overall 82.978723% answers were correct.
+    Category 0 has f1 score: 0.000000, precision: 0.000000, and recall 0.000000
+    Category 1 has f1 score: 0.563380, precision: 0.666667, and recall 0.487805
+    Category 2 has f1 score: 0.894737, precision: 0.866242, and recall 0.925170
+
+    With 2 hidden layers
+    Overall 81.914894% answers were correct.
+    Category 0 has f1 score: 0.000000, precision: 0.000000, and recall 0.000000
+    Category 1 has f1 score: 0.492308, precision: 0.666667, and recall 0.390244
+    Category 2 has f1 score: 0.890323, precision: 0.846626, and recall 0.938776
+
+    So more hidden layers does not do the trick.
+
+2017/04/15
+    Re-reading the papers was super helpful. I was reading the four most important papers I've found. And although
+    their task and approach is different from mine, it is worth seeing what techniques they've used and what I'm
+    lacking. I was not sure what to improve for a while, but now I realized that there are simply too many things to
+    improve.
+    I know that I'm not using pos information, which probably would help a lot. I know that pretrained word2vec may not
+    be suitable for this task because the words have different meaning in CS papers compared to in wikipedia, but it is
+    not such a good idea to retrain them because the corpus is noisy -- it contains too much non-text information.
+    I know that the current key phrases may not be a good, but I probably shouldn't change that at this point.
+    I know that the co-training idea might not work because neither task is sufficient by themselves, unlike what the
+    co-training paper has described.
+    I have not cleaned up the hand labeled data set.
+
+    So my conclusion is: the most feasible solution I can see is
+    TODO: 1. to give pos information (but I have to solve the compatibility issue, that is the current code combines
+    words into key phrases).
+    TODO: 2. To relabel the hand labeled dataset.
+    TODO: 3. Have a larger unlabeled dataset. (Worked on a little but maybe not worth it if we are using active learning or co training)
+
+    I fixed the infer program so that it now also infers for the answer of the reverse. So if it knows the answers to
+    A and B, then it also infers about B and A.
+    Maybe I should write an email and ask before I implement the pos, but I think having pos will never hurt the
+    training. I can see its potential merit.
+
+2017/04/16
+    It seems suspicious that the combined classifier ALWAYS outputs the same precision and recall. There is probably a
+    bug somewhere. Actually I think it is very likely to have a bug somewhere in the code in general, given how messy
+    it is.
+
+2017/04/23
+
+    What I have done this past week:
+    I mainly spent my time working on the thesis. I finished writing the introduction and related work part.
+    I identified two bugs when I was printing out the instances added using inference. I fixed it and ... Still training
+
+    I still think the co-training will not work. How come the two tasks are conditionally independent of one another...
+
+    Regarding the three potential sources of errors, the first one is the most likely. The second one is not a source
+    of error, because I have not spotted any false negatives yet, and now my pipeline draws 1000 random sentences, not
+    1000 random pairs of key phrases, so the probability of having the same pair in the 1000 unlabeled sentences is low.
+    (I have only 24000 unlabeled sentences and 21500 unlabeled key phrases -- rarely does a pair appear twice, although
+    if I count A xxx B and B xxx A as the same pair, the number of times the same pair appear will get higher.
+    The reason I did not choose the draw 1000 random pair of key phrases is because then I will be biased towards pairs
+    that appear less number of times (having two sentences being classified as containing relation is harder than
+    getting one sentence classified). The third source of error is during inferrence, polysemy. I checked the result
+    from three rounds and did not find any such problem.
+
+    I did not have time to add the POS yet.
+
+2017/05/01
+Improve the way I calculate the f1 score. Previously I was calculating it per sentence. It should be per pair of key
+phrases.
